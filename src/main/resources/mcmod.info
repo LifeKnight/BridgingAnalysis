@@ -1,0 +1,16 @@
+[
+{
+  "modid": "bridginganalysis",
+  "name": "Bridging Analysis",
+  "description": "Automatically records data demonstrated in my \"Analyzing YouTubers' Speedbridging\" video: https://www.youtube.com/watch?v=nfYcX0qfTZ0",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["LifeKnight"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
