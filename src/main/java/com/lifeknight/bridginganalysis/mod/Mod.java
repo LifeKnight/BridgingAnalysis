@@ -183,15 +183,17 @@ public class Mod {
 
 	private void getSessionsFromLogs() {
 		for (String log: sessionLogger.getLogs()) {
-			Scanner scanner = new Scanner(log);
+			THREAD_POOL.submit(() -> {
+				Scanner scanner = new Scanner(log);
 
-			String line;
-			while (scanner.hasNextLine()) {
-				line = scanner.nextLine();
-				if (!line.contains("New logger created")) {
-					BridgingAnalysis.interpretBridgingAnalysisFromJson(line);
+				String line;
+				while (scanner.hasNextLine()) {
+					line = scanner.nextLine();
+					if (!line.contains("New logger created")) {
+						BridgingAnalysis.interpretBridgingAnalysisFromJson(line);
+					}
 				}
-			}
+			});
 		}
 	}
 }
