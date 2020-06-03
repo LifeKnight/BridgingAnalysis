@@ -49,8 +49,9 @@ public class Mod {
 	public static final LifeKnightBoolean showStatus = new LifeKnightBoolean("ShowStatus", "Settings", true);
 	public static final LifeKnightBoolean automaticallyEndAfterThreshold = new LifeKnightBoolean("EndAfterThreshold", "Settings", false);
 	public static final LifeKnightInteger sessionThreshold = new LifeKnightInteger("SessionThreshold", "Settings", 30, 10, 300);
-	public static final LifeKnightBoolean omitSessionsUnderThreshold = new LifeKnightBoolean("OmmitSessionsUnderThreshold", "Settings", true);
-	public static final LifeKnightInteger ommitThreshold = new LifeKnightInteger("OmmitThreshold", "Settings", 5, 1, 30);
+	public static final LifeKnightBoolean omitSessionsUnderThreshold = new LifeKnightBoolean("OmitSessionsUnderThreshold", "Settings", true);
+	public static final LifeKnightInteger omitThreshold = new LifeKnightInteger("OmitThreshold", "Settings", 5, 1, 30);
+	public static final LifeKnightInteger decimalCount = new LifeKnightInteger("DecimalCount", "Settings", 2, 0, 8);
 	public static KeyBinding toggleSessionKeyBinding = new KeyBinding("Toggle bridging analysis session", 0x19, modName);
 	public static boolean sessionIsRunning = false;
 	public static ArrayList<BridgingAnalysis> analyses = new ArrayList<>();
@@ -73,12 +74,12 @@ public class Mod {
 
 			@Override
 			public boolean isVisible() {
-				return sessionIsRunning;
+				return sessionIsRunning && showStatus.getValue();
 			}
 
 			@Override
 			public String getTextToDisplay() {
-				return GREEN + "ACTIVE" + GOLD + " : " + AQUA + analyses.get(analyses.size() - 1).detectBridgeType() ;
+				return GREEN + "ACTIVE" + GOLD + ": " + AQUA + analyses.get(analyses.size() - 1).detectBridgeType();
 			}
 
 			@Override
@@ -109,7 +110,7 @@ public class Mod {
 
 			bridgingAnalysis.onTick();
 
-			if (automaticSessions.getValue() && (Minecraft.getMinecraft().thePlayer.motionY < -0.3 || Minecraft.getMinecraft().thePlayer.getLookVec().yCoord * -90 < 70)) {
+			if (automaticSessions.getValue() && (Minecraft.getMinecraft().thePlayer.motionY < -0.5 || Minecraft.getMinecraft().thePlayer.getLookVec().yCoord * -90 < 70)) {
 				bridgingAnalysis.end();
 			}
 		}

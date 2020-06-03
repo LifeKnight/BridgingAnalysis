@@ -24,6 +24,9 @@ public class BridgingAnalysis {
     private double startX = 0;
     private double startY = 0;
     private double startZ = 0;
+    private double endX = 0;;
+    private double endY = 0;
+    private double endZ = 0;
     private String time = "";
     private String date = "";
     private String serverIp = "";
@@ -75,14 +78,6 @@ public class BridgingAnalysis {
         return startZ;
     }
 
-    public int getTicksSpentShifting() {
-        return ticksSpentShifting;
-    }
-
-    public int getTicksSpentWaiting() {
-        return ticksSpentWaiting;
-    }
-
     public int getRightClickCount() {
         return (int) (rightClickCount / 2F);
     }
@@ -111,34 +106,28 @@ public class BridgingAnalysis {
         return waitTicks;
     }
 
-
     public String getTimeElapsedString() {
         return stopwatch.getFormattedTime();
     }
 
     public double getDistanceTraveledHorizontally() {
-        double x2 = Minecraft.getMinecraft().thePlayer.posX;
-        double z2 = Minecraft.getMinecraft().thePlayer.posZ;
-        return Math.sqrt(Math.pow(x2 - startX, 2) + Math.pow(z2 - startZ, 2));
+        return Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endZ - startZ, 2));
     }
 
     public double getDistanceTraveledVertically() {
-        return Minecraft.getMinecraft().thePlayer.posY - startY;
+        return endY - startY;
     }
 
     public double getDistanceTraveled() {
-        double x = Minecraft.getMinecraft().thePlayer.posX;
-        double y = Minecraft.getMinecraft().thePlayer.posY;
-        double z = Minecraft.getMinecraft().thePlayer.posZ;
-        return Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2) + Math.pow(z - startZ, 2));
+        return Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2) + Math.pow(endZ - startZ, 2));
     }
 
     public double getAveragePlacementSpeed() {
-        return (100 * (double) blocksPlacedCount / getTotalMilliseconds());
+        return (1000 * blocksPlacedCount / (double) getTotalMilliseconds());
     }
 
-    public double averageMovementSpeed() {
-        return (1000 * getDistanceTraveledHorizontally() / getTotalMilliseconds());
+    public double getAverageMovementSpeed() {
+        return (1000 * getDistanceTraveled() / (double) getTotalMilliseconds());
     }
 
     public double getTotalSecondsSpentShifting() {
@@ -173,7 +162,7 @@ public class BridgingAnalysis {
 
     public double getAverageShiftingTime() {
         if (shiftTicks.size() != 0) {
-            return (getTicksSpentShifting() / (double) shiftTicks.size());
+            return (getTotalSecondsSpentShifting() / (double) shiftTicks.size());
         }
         return 0;
     }
@@ -217,8 +206,12 @@ public class BridgingAnalysis {
         return averageYLook;
     }
 
+    public double getAverageClicksPerSecond() {
+        return 1000 * getRightClickCount() / (double) getTotalMilliseconds();
+    }
+
     public int getWastedClicks() {
-        return rightClickCount - blocksPlacedCount;
+        return getRightClickCount() - blocksPlacedCount;
     }
 
     public long getTotalMilliseconds() {
@@ -234,7 +227,7 @@ public class BridgingAnalysis {
         stopwatch.stop();
         elevationStopwatch.stop();
 
-        if (!(omitSessionsUnderThreshold.getValue() && ommitThreshold.getValue() > getTotalMilliseconds() / 1000F)) {
+        if (!(omitSessionsUnderThreshold.getValue() && omitThreshold.getValue() > getTotalMilliseconds() / 1000F)) {
             sessionLogger.plainLog(toString());
         }
     }
@@ -256,6 +249,11 @@ public class BridgingAnalysis {
 
     public void onTick() {
         totalMilliseconds = stopwatch.getTotalMilliseconds();
+
+        endX = Minecraft.getMinecraft().thePlayer.posX;
+        endY = Minecraft.getMinecraft().thePlayer.posY;
+        endZ = Minecraft.getMinecraft().thePlayer.posZ;
+
         if (automaticallyEndAfterThreshold.getValue() && getTotalMilliseconds() / 1000F >= sessionThreshold.getValue()) {
             end();
         } else {
@@ -306,14 +304,18 @@ public class BridgingAnalysis {
             result.shiftTicks = Text.fromCSVToIntegerArrayList(arrays.get("shiftTicks").getAsString());
             result.waitTicks = Text.fromCSVToIntegerArrayList(arrays.get("waitTicks").getAsString());
 
-            JsonObject startPosition = bridgingAnalysisAsJson.get("startPosition").getAsJsonObject();
+            JsonObject positions = bridgingAnalysisAsJson.get("positions").getAsJsonObject();
 
-            result.startX = startPosition.get("positionX").getAsDouble();
-            result.startY = startPosition.get("positionY").getAsDouble();
-            result.startZ = startPosition.get("positionZ").getAsDouble();
+            result.startX = positions.get("startZ").getAsDouble();
+            result.startY = positions.get("startY").getAsDouble();
+            result.startZ = positions.get("startZ").getAsDouble();
+
+            result.endX = positions.get("endX").getAsDouble();
+            result.endY = positions.get("endY").getAsDouble();
+            result.endZ = positions.get("endZ").getAsDouble();
 
         } catch (Exception e) {
-            new BridgingAnalysis();
+            e.printStackTrace();
         }
     }
 
@@ -348,24 +350,23 @@ public class BridgingAnalysis {
 
         bridgingAnalysisAsJson.add("arrays", arrays);
 
-        JsonObject startPosition = new JsonObject();
+        JsonObject positions = new JsonObject();
 
-        startPosition.addProperty("positionX", startX);
-        startPosition.addProperty("positionY", startY);
-        startPosition.addProperty("positionZ", startZ);
+        positions.addProperty("startX", startX);
+        positions.addProperty("startY", startY);
+        positions.addProperty("startZ", startZ);
 
-        bridgingAnalysisAsJson.add("startPosition", startPosition);
+        positions.addProperty("endX", endX);
+        positions.addProperty("endY", endY);
+        positions.addProperty("endZ", endZ);
+
+        bridgingAnalysisAsJson.add("positions", positions);
 
         return bridgingAnalysisAsJson.toString();
     }
 
     public String detectBridgeType() {
         String result = "";
-
-        if (blocksPlacedCount > 9) {
-            System.out.println(getDistanceTraveled());
-        }
-
         if (getDistanceTraveledVertically() / getDistanceTraveledHorizontally() > 1.25) {
             if (blocksPlacedCount / getDistanceTraveled() > 1.5) {
                 result = "Diagonal ";
@@ -415,4 +416,19 @@ public class BridgingAnalysis {
         }
         return result;
     }
+
+    public static ArrayList<BridgingAnalysis> getAnalyses() {
+        if (omitSessionsUnderThreshold.getValue()) {
+            ArrayList<BridgingAnalysis> result = new ArrayList<>();
+
+            for (BridgingAnalysis bridgingAnalysis : analyses) {
+                if (bridgingAnalysis.getTotalMilliseconds() >= omitThreshold.getValue() * 1000) {
+                    result.add(bridgingAnalysis);
+                }
+            }
+            return result;
+        }
+        return analyses;
+    }
+
 }

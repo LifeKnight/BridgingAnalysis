@@ -15,12 +15,13 @@ import java.util.Collections;
 import java.util.List;
 
 
+import static com.lifeknight.bridginganalysis.mod.BridgingAnalysis.getAnalyses;
 import static net.minecraft.util.EnumChatFormatting.*;
 import static com.lifeknight.bridginganalysis.mod.Mod.*;
 
 public class ModCommand extends CommandBase {
 	private final List<String> aliases = Collections.singletonList("ba");
-	private final String[] mainCommands = {};
+	private final String[] mainCommands = {"open", "latest"};
 
 	public String getCommandName() {
 		return modID;
@@ -56,7 +57,25 @@ public class ModCommand extends CommandBase {
 	}
 
 	public void processCommand(ICommandSender arg0, String[] arg1) throws CommandException {
-		openGui(new LifeKnightGui("[" + modVersion + "] " + modName, variables));
+		if (arg1.length > 0) {
+			if (arg1[0].equalsIgnoreCase(mainCommands[0])) {
+				if (getAnalyses().size() != 0) {
+					openGui(new BridgingAnalysisGui(getAnalyses().get(0)));
+				} else {
+					Chat.addErrorMessage("There is no BridgingAnalysis session to display.");
+				}
+			} else if (arg1[0].equalsIgnoreCase(mainCommands[1])) {
+				if (getAnalyses().size() != 0) {
+					openGui(new BridgingAnalysisGui(getAnalyses().get(getAnalyses().size() - 1)));
+				} else {
+					Chat.addErrorMessage("There is no BridgingAnalysis session to display.");
+				}
+			} else {
+				addMainCommandMessage();
+			}
+		} else {
+			openGui(new LifeKnightGui("[" + modVersion + "] " + modName, variables));
+		}
 	}
 
 	public void addMainCommandMessage() {
