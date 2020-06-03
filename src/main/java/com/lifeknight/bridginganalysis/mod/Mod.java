@@ -5,9 +5,11 @@ import com.lifeknight.bridginganalysis.utilities.Logger;
 import com.lifeknight.bridginganalysis.variables.LifeKnightBoolean;
 import com.lifeknight.bridginganalysis.variables.LifeKnightInteger;
 import com.lifeknight.bridginganalysis.variables.LifeKnightVariable;
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraftforge.client.ClientCommandHandler;
@@ -53,7 +55,7 @@ public class Mod {
 	public static final LifeKnightInteger omitThreshold = new LifeKnightInteger("OmitThreshold", "Settings", 5, 1, 30);
 	public static final LifeKnightInteger decimalCount = new LifeKnightInteger("DecimalCount", "Settings", 2, 0, 8);
 	public static KeyBinding toggleSessionKeyBinding = new KeyBinding("Toggle bridging analysis session", 0x19, modName);
-	public static boolean sessionIsRunning = false;
+	public static boolean sessionIsRunning = false, blockCanBePlaced = false;
 	public static ArrayList<BridgingAnalysis> analyses = new ArrayList<>();
 	public static Logger sessionLogger;
 	public static Config config;
@@ -114,6 +116,17 @@ public class Mod {
 				bridgingAnalysis.end();
 			}
 		}
+		MovingObjectPosition movingObjectPosition = Minecraft.getMinecraft().objectMouseOver;
+
+		if (movingObjectPosition != null) {
+			if (movingObjectPosition.typeOfHit == BLOCK && !movingObjectPosition.sideHit.getName().equals("up") && !movingObjectPosition.sideHit.getName().equals("down")) {
+				if (Minecraft.getMinecraft().thePlayer.getHeldItem() != null && Minecraft.getMinecraft().thePlayer.getHeldItem().getItem() instanceof ItemBlock) {
+					blockCanBePlaced = true;
+				}
+			} else {
+				blockCanBePlaced = false;
+			}
+		}
 	}
 
 	@SubscribeEvent
@@ -137,27 +150,22 @@ public class Mod {
 	@SubscribeEvent
 	public void onMousePressed(InputEvent.MouseInputEvent event) {
 		if (Mouse.getEventButton() == 1 && Minecraft.getMinecraft().inGameHasFocus) {
+		    if (blockCanBePlaced) {
+		        onBlockPlacement();
+            }
 			if (sessionIsRunning) {
 				analyses.get(analyses.size() - 1).incrementRightClicks();
 			}
 		}
-
 	}
 
-	@SubscribeEvent
-	public void onBlockPlacement(BlockEvent.PlaceEvent event) {
-		if (event.player.getUniqueID() == Minecraft.getMinecraft().thePlayer.getUniqueID()) {
-			if (sessionIsRunning) {
-				analyses.get(analyses.size() - 1).onBlockPlacement();
-			} else if (automaticSessions.getValue() && Keyboard.isKeyDown(0x1F) && Minecraft.getMinecraft().thePlayer.getLookVec().yCoord * -90 > 75) {
-				MovingObjectPosition movingObjectPosition = Minecraft.getMinecraft().objectMouseOver;
-
-				if (movingObjectPosition.typeOfHit == BLOCK && movingObjectPosition.sideHit.getName().equals("up")) {
-					startNewAnalysis();
-				}
-			}
-		}
-	}
+	public void onBlockPlacement() {
+        if (sessionIsRunning) {
+            analyses.get(analyses.size() - 1).onBlockPlacement();
+        } else if (automaticSessions.getValue() && Keyboard.isKeyDown(0x1F) && Minecraft.getMinecraft().thePlayer.getLookVec().yCoord * -90 > 75) {
+            startNewAnalysis();
+        }
+    }
 
 	@SubscribeEvent
 	public void onJump(LivingEvent.LivingJumpEvent event) {
