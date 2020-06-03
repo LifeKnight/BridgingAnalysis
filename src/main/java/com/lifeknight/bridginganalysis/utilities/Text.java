@@ -155,7 +155,9 @@ public class Text {
 			ArrayList<Integer> result = new ArrayList<>();
 
 			for (String integer: integers) {
-				result.add(Integer.parseInt(integer));
+				if (!integer.isEmpty()) {
+					result.add(Integer.parseInt(integer));
+				}
 			}
 			return result;
 		} catch (Exception e) {

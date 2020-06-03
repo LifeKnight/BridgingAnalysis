@@ -1,10 +1,7 @@
 package com.lifeknight.bridginganalysis.mod;
 
 import com.lifeknight.bridginganalysis.gui.hud.HudText;
-import com.lifeknight.bridginganalysis.utilities.Chat;
 import com.lifeknight.bridginganalysis.utilities.Logger;
-import com.lifeknight.bridginganalysis.utilities.Misc;
-import com.lifeknight.bridginganalysis.utilities.Text;
 import com.lifeknight.bridginganalysis.variables.LifeKnightBoolean;
 import com.lifeknight.bridginganalysis.variables.LifeKnightInteger;
 import com.lifeknight.bridginganalysis.variables.LifeKnightVariable;
@@ -12,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.MovingObjectPosition;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingEvent;
@@ -22,20 +20,18 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static com.lifeknight.bridginganalysis.gui.hud.HudTextRenderer.doRender;
 import static net.minecraft.util.EnumChatFormatting.*;
+import static net.minecraft.util.MovingObjectPosition.MovingObjectType.BLOCK;
 
 @net.minecraftforge.fml.common.Mod(modid = Mod.modID, name = Mod.modName, version = Mod.modVersion, clientSideOnly = true)
 public class Mod {
@@ -49,10 +45,13 @@ public class Mod {
 	public static GuiScreen guiToOpen;
 	public static final ArrayList<LifeKnightVariable> variables = new ArrayList<>();
 	public static final LifeKnightBoolean runMod = new LifeKnightBoolean("Mod", "Main", true);
-	public static final LifeKnightBoolean automaticStart = new LifeKnightBoolean("AutomaticStart", "Settings", false);
+	public static final LifeKnightBoolean automaticSessions = new LifeKnightBoolean("AutomaticSessions", "Settings", false);
 	public static final LifeKnightBoolean showStatus = new LifeKnightBoolean("ShowStatus", "Settings", true);
+	public static final LifeKnightBoolean automaticallyEndAfterThreshold = new LifeKnightBoolean("EndAfterThreshold", "Settings", false);
+	public static final LifeKnightInteger sessionThreshold = new LifeKnightInteger("SessionThreshold", "Settings", 30, 10, 300);
+	public static final LifeKnightBoolean omitSessionsUnderThreshold = new LifeKnightBoolean("OmmitSessionsUnderThreshold", "Settings", true);
+	public static final LifeKnightInteger ommitThreshold = new LifeKnightInteger("OmmitThreshold", "Settings", 5, 1, 30);
 	public static KeyBinding toggleSessionKeyBinding = new KeyBinding("Toggle bridging analysis session", 0x19, modName);
-	public static final LifeKnightInteger toggleSessionKeyBind = new LifeKnightInteger("ToggleSessionKeyBind", "Movement", 0x19);
 	public static boolean sessionIsRunning = false;
 	public static ArrayList<BridgingAnalysis> analyses = new ArrayList<>();
 	public static Logger sessionLogger;
@@ -64,7 +63,6 @@ public class Mod {
 		MinecraftForge.EVENT_BUS.register(this);
 		ClientCommandHandler.instance.registerCommand(new ModCommand());
 
-		variables.remove(toggleSessionKeyBind);
 		config = new Config();
 
 		sessionLogger = new Logger("BridgingSessions", new File("logs/lifeknight/bridgingsessions"));
@@ -80,17 +78,17 @@ public class Mod {
 
 			@Override
 			public String getTextToDisplay() {
-				return GREEN + "ACTIVE";
+				return GREEN + "ACTIVE" + GOLD + " : " + AQUA + analyses.get(analyses.size() - 1).detectBridgeType() ;
 			}
 
 			@Override
 			public int getXCoordinate() {
-				return Misc.getScaledWidth(10);
+				return 10;
 			}
 
 			@Override
 			public int getYCoordinate() {
-				return Misc.getScaledHeight(5);
+				return 5;
 			}
 		};
 	}
@@ -111,7 +109,7 @@ public class Mod {
 
 			bridgingAnalysis.onTick();
 
-			if (automaticStart.getValue() && (bridgingAnalysis.getDistanceTraveledVertically() < -1 || Minecraft.getMinecraft().thePlayer.getLookVec().yCoord * -90 < 70)) {
+			if (automaticSessions.getValue() && (Minecraft.getMinecraft().thePlayer.motionY < -0.3 || Minecraft.getMinecraft().thePlayer.getLookVec().yCoord * -90 < 70)) {
 				bridgingAnalysis.end();
 			}
 		}
@@ -150,8 +148,12 @@ public class Mod {
 		if (event.player.getUniqueID() == Minecraft.getMinecraft().thePlayer.getUniqueID()) {
 			if (sessionIsRunning) {
 				analyses.get(analyses.size() - 1).onBlockPlacement();
-			} else if (automaticStart.getValue() && Keyboard.isKeyDown(0x1F) && (Keyboard.isKeyDown(0x1E) || Keyboard.isKeyDown(0x20)) && Minecraft.getMinecraft().thePlayer.getLookVec().yCoord * -90 > 75) {
-				startNewAnalysis();
+			} else if (automaticSessions.getValue() && Keyboard.isKeyDown(0x1F) && Minecraft.getMinecraft().thePlayer.getLookVec().yCoord * -90 > 75) {
+				MovingObjectPosition movingObjectPosition = Minecraft.getMinecraft().objectMouseOver;
+
+				if (movingObjectPosition.typeOfHit == BLOCK && movingObjectPosition.sideHit.getName().equals("up")) {
+					startNewAnalysis();
+				}
 			}
 		}
 	}

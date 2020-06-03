@@ -19,7 +19,7 @@ import static net.minecraft.util.EnumChatFormatting.*;
 import static com.lifeknight.bridginganalysis.mod.Mod.*;
 
 public class ModCommand extends CommandBase {
-	private final List<String> aliases = Collections.singletonList("mb");
+	private final List<String> aliases = Collections.singletonList("ba");
 	private final String[] mainCommands = {};
 
 	public String getCommandName() {
@@ -56,7 +56,7 @@ public class ModCommand extends CommandBase {
 	}
 
 	public void processCommand(ICommandSender arg0, String[] arg1) throws CommandException {
-		Mod.openGui(new LifeKnightGui("[" + modVersion + "] " + modName, variables));
+		openGui(new LifeKnightGui("[" + modVersion + "] " + modName, variables));
 	}
 
 	public void addMainCommandMessage() {
