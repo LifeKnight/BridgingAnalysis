@@ -4,6 +4,7 @@ import com.google.gson.JsonParser;
 import com.lifeknight.bridginganalysis.utilities.Misc;
 import com.lifeknight.bridginganalysis.utilities.Stopwatch;
 import com.lifeknight.bridginganalysis.utilities.Text;
+import com.sun.javafx.geom.Vec2d;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
@@ -35,7 +36,7 @@ public class BridgingAnalysis {
     private ArrayList<Integer> elevationTimes = new ArrayList<>();
     private ArrayList<Integer> shiftTicks = new ArrayList<>();
     private ArrayList<Integer> waitTicks = new ArrayList<>();
-    private final ArrayList<Vec3> lookVectors = new ArrayList<>();
+    private final ArrayList<Vec2d> lookVectors = new ArrayList<>();
     private final Stopwatch stopwatch = new Stopwatch();
     private final Stopwatch elevationStopwatch = new Stopwatch();
 
@@ -186,10 +187,10 @@ public class BridgingAnalysis {
         if (averageXLook == 0) {
             double sumOfXLooks = 0;
             
-            for (Vec3 lookVector : lookVectors) {
-                sumOfXLooks += lookVector.xCoord;
+            for (Vec2d lookVector : lookVectors) {
+                sumOfXLooks += lookVector.x;
             }
-            averageXLook =  -395.5097353389201 * sumOfXLooks / (double) lookVectors.size();
+            averageXLook = sumOfXLooks / (double) lookVectors.size();
         }
         return averageXLook;
     }
@@ -198,10 +199,10 @@ public class BridgingAnalysis {
         if (averageYLook == 0) {
             double sumOfYLooks = 0;
 
-            for (Vec3 lookVector : lookVectors) {
-                sumOfYLooks += lookVector.yCoord;
+            for (Vec2d lookVector : lookVectors) {
+                sumOfYLooks += lookVector.y;
             }
-            averageYLook = -90 * sumOfYLooks / (double) lookVectors.size();
+            averageYLook = sumOfYLooks / (double) lookVectors.size();
         }
         return averageYLook;
     }
@@ -258,7 +259,7 @@ public class BridgingAnalysis {
             end();
         } else {
             if (totalMilliseconds % 20 == 0) {
-                lookVectors.add(Minecraft.getMinecraft().thePlayer.getLookVec());
+                lookVectors.add(Misc.getReversedLookVector());
             }
             if (Minecraft.getMinecraft().thePlayer.isSneaking()) {
                 ticksSpentShifting++;
@@ -367,34 +368,31 @@ public class BridgingAnalysis {
 
     public String detectBridgeType() {
         String result = "";
+        double XtoZRatio = Math.abs((endX - startX) / (endZ - startZ));
+
+        if (XtoZRatio > 0.8 && XtoZRatio < 1.2) {
+            result = "Diagonal ";
+        }
+
         if (getDistanceTraveledVertically() / getDistanceTraveledHorizontally() > 1.25) {
-            if (blocksPlacedCount / getDistanceTraveled() > 1.5) {
-                result = "Diagonal ";
-            }
             if (shiftTicks.size() / (double) blocksPlacedCount > 1.25) {
                 result += "Shift-jitterbridging";
             } else {
                 result += "Tallstacking";
             }
         } else if (getDistanceTraveledVertically() / getDistanceTraveledHorizontally() < 0.4) {
-            if (blocksPlacedCount / getDistanceTraveled() > 1.5) {
-                result = "Diagonal ";
-            }
             if (shiftTicks.size() / (double) blocksPlacedCount < 0.0625) {
                 if (1000 * getRightClickCount() / (double) getTotalMilliseconds() > 7) {
                     result += "Breezily/Godbridge";
                 } else {
                     result += "Low CPS Breezily/Godbridge";
                 }
-            } else if (shiftTicks.size() / (double) blocksPlacedCount > 0.8) {
+            } else if (shiftTicks.size() / (double) blocksPlacedCount > 0.3) {
                 result += "Speedbridging";
             } else {
                 result += "Breezily/Godbridge-Shift";
             }
         } else if (getDistanceTraveledVertically() / getDistanceTraveledHorizontally() < 0.8) {
-            if (blocksPlacedCount / getDistanceTraveled() > 1.75) {
-                result = "Diagonal ";
-            }
             if (shiftTicks.size() / (double) blocksPlacedCount < 0.25) {
                 if (1000 * getRightClickCount() / (double) getTotalMilliseconds() > 7) {
                     result += "Jitterbridging";
@@ -405,9 +403,6 @@ public class BridgingAnalysis {
                 result += "Shift-jitterbridging";
             }
         } else {
-            if (blocksPlacedCount / getDistanceTraveled() > 2) {
-                result = "Diagonal ";
-            }
             if (1000 * getRightClickCount() / (double) getTotalMilliseconds() > 7) {
                 result += "Jitterstacking";
             } else {

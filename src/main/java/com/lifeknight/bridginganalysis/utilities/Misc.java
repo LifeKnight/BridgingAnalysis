@@ -1,6 +1,8 @@
 package com.lifeknight.bridginganalysis.utilities;
 
+import com.sun.javafx.geom.Vec2d;
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.Vec3;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -70,5 +72,43 @@ public class Misc {
 	public static int getGameHeight() {
 		int i = Minecraft.getMinecraft().gameSettings.guiScale == 0 ? 1 : Minecraft.getMinecraft().gameSettings.guiScale;
 		return Minecraft.getMinecraft().displayHeight / i;
+	}
+
+	public static Vec2d getReversedLookVector() {
+		Vec3 vec3In = Minecraft.getMinecraft().thePlayer.getLookVec();
+		double k = 0.017453292;
+
+		double x = vec3In.xCoord;
+		double y = vec3In.yCoord;
+
+		double pitch = Math.acos(y) / k;
+
+		double yaw = -(Math.acos(x/y) + Math.PI) / k;
+
+		return new Vec2d(yaw, pitch);
+	}
+	
+	public static int scaleFrom1920x1080Width(int widthIn) {
+		int i;
+		if (Minecraft.getMinecraft().gameSettings.guiScale == 0 || Minecraft.getMinecraft().gameSettings.guiScale == 1) {
+			i = widthIn / 3;
+		} else if (Minecraft.getMinecraft().gameSettings.guiScale == 2) {
+			i = widthIn / 2;
+		} else {
+			i = widthIn;
+		}
+		return (int) (i * (getGameWidth() / (double) getSupposedWidth()));
+	}
+
+	public static int scaleFrom1920x1080Height(int widthIn) {
+		int i;
+		if (Minecraft.getMinecraft().gameSettings.guiScale == 0 || Minecraft.getMinecraft().gameSettings.guiScale == 1) {
+			i = widthIn / 3;
+		} else if (Minecraft.getMinecraft().gameSettings.guiScale == 2) {
+			i = widthIn / 2;
+		} else {
+			i = widthIn;
+		}
+		return (int) (i * (getGameHeight() / (double) getSupposedHeight()));
 	}
 }

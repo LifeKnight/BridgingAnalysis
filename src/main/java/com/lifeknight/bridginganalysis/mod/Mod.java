@@ -2,7 +2,9 @@ package com.lifeknight.bridginganalysis.mod;
 
 import com.lifeknight.bridginganalysis.gui.hud.HudText;
 import com.lifeknight.bridginganalysis.utilities.Logger;
+import com.lifeknight.bridginganalysis.utilities.Misc;
 import com.lifeknight.bridginganalysis.variables.LifeKnightBoolean;
+import com.lifeknight.bridginganalysis.variables.LifeKnightCycle;
 import com.lifeknight.bridginganalysis.variables.LifeKnightInteger;
 import com.lifeknight.bridginganalysis.variables.LifeKnightVariable;
 import net.minecraft.block.Block;
@@ -15,6 +17,7 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -27,6 +30,7 @@ import org.lwjgl.input.Mouse;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -39,7 +43,7 @@ import static net.minecraft.util.MovingObjectPosition.MovingObjectType.BLOCK;
 public class Mod {
 	public static final String
 			modName = "BridgingAnalysis",
-			modVersion = "0.1",
+			modVersion = "0.2",
 			modID = "bridginganalysis";
 	public static final EnumChatFormatting modColor = DARK_GREEN;
 	public static final ExecutorService THREAD_POOL = Executors.newCachedThreadPool(new LifeKnightThreadFactory());
@@ -54,8 +58,10 @@ public class Mod {
 	public static final LifeKnightBoolean omitSessionsUnderThreshold = new LifeKnightBoolean("OmitSessionsUnderThreshold", "Settings", true);
 	public static final LifeKnightInteger omitThreshold = new LifeKnightInteger("OmitThreshold", "Settings", 5, 1, 30);
 	public static final LifeKnightInteger decimalCount = new LifeKnightInteger("DecimalCount", "Settings", 2, 0, 8);
+	public static final LifeKnightInteger statusXPosition = new LifeKnightInteger("StatusXPosition", "HUD", 10, 0, 1920);
+	public static final LifeKnightInteger statusYPosition = new LifeKnightInteger("StatusYPosition", "HUD", 5, 0, 1080);
 	public static KeyBinding toggleSessionKeyBinding = new KeyBinding("Toggle bridging analysis session", 0x19, modName);
-	public static boolean sessionIsRunning = false, blockCanBePlaced = false;
+	public static boolean sessionIsRunning = false;
 	public static ArrayList<BridgingAnalysis> analyses = new ArrayList<>();
 	public static Logger sessionLogger;
 	public static Config config;
@@ -73,7 +79,6 @@ public class Mod {
 		getSessionsFromLogs();
 
 		new HudText() {
-
 			@Override
 			public boolean isVisible() {
 				return sessionIsRunning && showStatus.getValue();
@@ -83,15 +88,14 @@ public class Mod {
 			public String getTextToDisplay() {
 				return GREEN + "ACTIVE" + GOLD + ": " + AQUA + analyses.get(analyses.size() - 1).detectBridgeType();
 			}
-
 			@Override
 			public int getXCoordinate() {
-				return 10;
+				return Misc.scaleFrom1920x1080Width(statusXPosition.getValue());
 			}
 
 			@Override
 			public int getYCoordinate() {
-				return 5;
+				return Misc.scaleFrom1920x1080Height(statusYPosition.getValue());
 			}
 		};
 	}
@@ -116,17 +120,6 @@ public class Mod {
 				bridgingAnalysis.end();
 			}
 		}
-		MovingObjectPosition movingObjectPosition = Minecraft.getMinecraft().objectMouseOver;
-
-		if (movingObjectPosition != null) {
-			if (movingObjectPosition.typeOfHit == BLOCK && !movingObjectPosition.sideHit.getName().equals("up") && !movingObjectPosition.sideHit.getName().equals("down")) {
-				if (Minecraft.getMinecraft().thePlayer.getHeldItem() != null && Minecraft.getMinecraft().thePlayer.getHeldItem().getItem() instanceof ItemBlock) {
-					blockCanBePlaced = true;
-				}
-			} else {
-				blockCanBePlaced = false;
-			}
-		}
 	}
 
 	@SubscribeEvent
@@ -148,11 +141,17 @@ public class Mod {
 	}
 
 	@SubscribeEvent
+    public void onPlayerInteract(PlayerInteractEvent event) {
+	    if (event.entityPlayer.getUniqueID() == Minecraft.getMinecraft().thePlayer.getUniqueID() && event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK &&
+				!event.face.getName().equals("up") && !event.face.getName().equals("down") &&
+				Minecraft.getMinecraft().thePlayer.getHeldItem() != null && Minecraft.getMinecraft().thePlayer.getHeldItem().getItem() instanceof ItemBlock) {
+	        onBlockPlacement();
+        }
+    }
+
+	@SubscribeEvent
 	public void onMousePressed(InputEvent.MouseInputEvent event) {
 		if (Mouse.getEventButton() == 1 && Minecraft.getMinecraft().inGameHasFocus) {
-		    if (blockCanBePlaced) {
-		        onBlockPlacement();
-            }
 			if (sessionIsRunning) {
 				analyses.get(analyses.size() - 1).incrementRightClicks();
 			}
