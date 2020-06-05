@@ -428,7 +428,7 @@ public class BridgingAnalysis {
                 }  else {
                     result += "Low CPS Breezily/Godbridge";
                 }
-            } else if (shiftTicks.size() / (double) blocksPlacedCount > (result.contains("Diagonal") ? 0.2 : 0.6)) {
+            } else if (shiftTicks.size() / (double) blocksPlacedCount > (result.contains("Diagonal") ? 0.2 : 0.4)) {
                 result += "Speedbridge";
             } else if (shiftTicks.size() / (double) blocksPlacedCount < 0.1 && Minecraft.getMinecraft().thePlayer.isSneaking()) {
                 result += "Shifted Bridging";

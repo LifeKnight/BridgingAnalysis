@@ -246,8 +246,7 @@ public class BridgingAnalysisGui extends GuiScreen {
     }
 
     @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException
-    {
+    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
         if (navigateField != null) {
             navigateField.mouseClicked(mouseX, mouseY, mouseButton);
         }

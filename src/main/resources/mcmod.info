@@ -2,7 +2,7 @@
 {
   "modid": "bridginganalysis",
   "name": "Bridging Analysis",
-  "description": "Automatically records data demonstrated in my \"Analyzing YouTubers' Speedbridging\" video: https://www.youtube.com/watch?v=nfYcX0qfTZ0",
+  "description": "Automatically records data demonstrated in my \"Analyzing YouTubers' Speedbridging\" video: https://www.youtube.com/watch?v=nfYcX0qfTZ0\n\nFeaturese:\n\nVideo:\n\nText: https://hst.sh/bobalowuho.sql ",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",
