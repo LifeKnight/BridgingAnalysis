@@ -11,6 +11,7 @@ public abstract class LifeKnightTextField extends GuiTextField {
     private final int width;
     private final int height;
     public String name;
+    public String subDisplayMessage;
     public LifeKnightString lifeKnightString = null;
     public String lastInput = "";
 
@@ -58,6 +59,10 @@ public abstract class LifeKnightTextField extends GuiTextField {
             return true;
         }
         return false;
+    }
+
+    public void setSubDisplayMessage(String subDisplayMessage) {
+        this.subDisplayMessage = subDisplayMessage;
     }
 
     public abstract void handleInput();

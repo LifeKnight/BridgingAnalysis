@@ -10,6 +10,7 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import static com.lifeknight.bridginganalysis.mod.Mod.*;
 import static com.lifeknight.bridginganalysis.mod.Mod.sessionLogger;
@@ -33,10 +34,11 @@ public class BridgingAnalysis {
     private String serverIp = "";
     private double averageXLook = 0;
     private double averageYLook = 0;
+    private double averageZLook = 0;
     private ArrayList<Integer> elevationTimes = new ArrayList<>();
     private ArrayList<Integer> shiftTicks = new ArrayList<>();
     private ArrayList<Integer> waitTicks = new ArrayList<>();
-    private final ArrayList<Vec2d> lookVectors = new ArrayList<>();
+    private final ArrayList<Vec3> lookVectors = new ArrayList<>();
     private final Stopwatch stopwatch = new Stopwatch();
     private final Stopwatch elevationStopwatch = new Stopwatch();
 
@@ -111,16 +113,28 @@ public class BridgingAnalysis {
         return stopwatch.getFormattedTime();
     }
 
+    public double getEndX() {
+        return endX == 0 ? Minecraft.getMinecraft().thePlayer.posX : endX;
+    }
+
+    public double getEndY() {
+        return endY == 0 ? Minecraft.getMinecraft().thePlayer.posY : endY;
+    }
+
+    public double getEndZ() {
+        return endZ == 0 ? Minecraft.getMinecraft().thePlayer.posZ : endZ;
+    }
+
     public double getDistanceTraveledHorizontally() {
-        return Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endZ - startZ, 2));
+        return Math.sqrt(Math.pow(getEndX() - startX, 2) + Math.pow(getEndZ() - startZ, 2));
     }
 
     public double getDistanceTraveledVertically() {
-        return endY - startY;
+        return getEndY() - startY;
     }
 
     public double getDistanceTraveled() {
-        return Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2) + Math.pow(endZ - startZ, 2));
+        return Math.sqrt(Math.pow(getEndX() - startX, 2) + Math.pow(getEndY() - startY, 2) + Math.pow(getEndZ() - startZ, 2));
     }
 
     public double getAveragePlacementSpeed() {
@@ -187,8 +201,8 @@ public class BridgingAnalysis {
         if (averageXLook == 0) {
             double sumOfXLooks = 0;
             
-            for (Vec2d lookVector : lookVectors) {
-                sumOfXLooks += lookVector.x;
+            for (Vec3 lookVector : lookVectors) {
+                sumOfXLooks += lookVector.xCoord;
             }
             averageXLook = sumOfXLooks / (double) lookVectors.size();
         }
@@ -199,12 +213,24 @@ public class BridgingAnalysis {
         if (averageYLook == 0) {
             double sumOfYLooks = 0;
 
-            for (Vec2d lookVector : lookVectors) {
-                sumOfYLooks += lookVector.y;
+            for (Vec3 lookVector : lookVectors) {
+                sumOfYLooks += lookVector.yCoord;
             }
             averageYLook = sumOfYLooks / (double) lookVectors.size();
         }
         return averageYLook;
+    }
+
+    public double getAverageZLook() {
+        if (averageZLook == 0) {
+            double sumOfZLooks = 0;
+
+            for (Vec3 lookVector : lookVectors) {
+                sumOfZLooks += lookVector.zCoord;
+            }
+            averageZLook = sumOfZLooks / (double) lookVectors.size();
+        }
+        return averageZLook;
     }
 
     public double getAverageClicksPerSecond() {
@@ -227,6 +253,10 @@ public class BridgingAnalysis {
         sessionIsRunning = false;
         stopwatch.stop();
         elevationStopwatch.stop();
+
+        endX = Minecraft.getMinecraft().thePlayer.posX;
+        endY = Minecraft.getMinecraft().thePlayer.posY;
+        endZ = Minecraft.getMinecraft().thePlayer.posZ;
 
         if (!(omitSessionsUnderThreshold.getValue() && omitThreshold.getValue() > getTotalMilliseconds() / 1000F)) {
             sessionLogger.plainLog(toString());
@@ -251,15 +281,11 @@ public class BridgingAnalysis {
     public void onTick() {
         totalMilliseconds = stopwatch.getTotalMilliseconds();
 
-        endX = Minecraft.getMinecraft().thePlayer.posX;
-        endY = Minecraft.getMinecraft().thePlayer.posY;
-        endZ = Minecraft.getMinecraft().thePlayer.posZ;
-
         if (automaticallyEndAfterThreshold.getValue() && getTotalMilliseconds() / 1000F >= sessionThreshold.getValue()) {
             end();
         } else {
             if (totalMilliseconds % 20 == 0) {
-                lookVectors.add(Misc.getReversedLookVector());
+                lookVectors.add(Minecraft.getMinecraft().thePlayer.getLookVec());
             }
             if (Minecraft.getMinecraft().thePlayer.isSneaking()) {
                 ticksSpentShifting++;
@@ -291,6 +317,7 @@ public class BridgingAnalysis {
             result.date = miscellaneous.get("date").getAsString();
             result.averageXLook = miscellaneous.get("averageXLook").getAsDouble();
             result.averageYLook = miscellaneous.get("averageYLook").getAsDouble();
+            result.averageZLook = miscellaneous.get("averageZLook").getAsDouble();
 
             JsonObject counts = bridgingAnalysisAsJson.get("counts").getAsJsonObject();
 
@@ -331,6 +358,7 @@ public class BridgingAnalysis {
         miscellaneous.addProperty("date", date);
         miscellaneous.addProperty("averageXLook", getAverageXLook());
         miscellaneous.addProperty("averageYLook", getAverageYLook());
+        miscellaneous.addProperty("averageZLook", getAverageZLook());
 
         bridgingAnalysisAsJson.add("miscellaneous", miscellaneous);
 
@@ -413,17 +441,23 @@ public class BridgingAnalysis {
     }
 
     public static ArrayList<BridgingAnalysis> getAnalyses() {
-        if (omitSessionsUnderThreshold.getValue()) {
-            ArrayList<BridgingAnalysis> result = new ArrayList<>();
+        ArrayList<BridgingAnalysis> result = new ArrayList<>();
 
-            for (BridgingAnalysis bridgingAnalysis : analyses) {
-                if (bridgingAnalysis.getTotalMilliseconds() >= omitThreshold.getValue() * 1000) {
+        for (BridgingAnalysis bridgingAnalysis : analyses) {
+            if (!omitSessionsUnderThreshold.getValue() || (omitSessionsUnderThreshold.getValue() && bridgingAnalysis.getTotalMilliseconds() >= omitThreshold.getValue() * 1000)) {
+                if ((filterType.getCurrentValueString().equals("All") || bridgingAnalysis.detectBridgeType().toLowerCase().contains(filterType.getCurrentValueString().toLowerCase())) &&
+                        (direction.getCurrentValueString().equals("All") || (direction.getCurrentValueString().equals("Horizontal") && !bridgingAnalysis.detectBridgeType().contains("Diagonal")) || (direction.getCurrentValueString().equals("Diagonal") && bridgingAnalysis.detectBridgeType().contains("Diagonal"))) &&
+                        (dateToSearch.isEmpty() || bridgingAnalysis.getDate().equals(dateToSearch))) {
                     result.add(bridgingAnalysis);
                 }
             }
-            return result;
         }
-        return analyses;
+        if (result.size() == 0) {
+            BridgingAnalysis bridgingAnalysis = new BridgingAnalysis();
+            bridgingAnalysis.time = "";
+            return new ArrayList<>(Collections.singletonList(bridgingAnalysis));
+        }
+        return result;
     }
 
 }
