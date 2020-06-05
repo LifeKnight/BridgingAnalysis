@@ -39,7 +39,7 @@ import static net.minecraft.util.EnumChatFormatting.*;
 public class Mod {
     public static final String
             modName = "BridgingAnalysis",
-            modVersion = "0.3",
+            modVersion = "0.3.1",
             modID = "bridginganalysis";
     public static final EnumChatFormatting modColor = DARK_GREEN;
     public static final ExecutorService THREAD_POOL = Executors.newCachedThreadPool(new LifeKnightThreadFactory());
@@ -47,11 +47,11 @@ public class Mod {
     public static GuiScreen guiToOpen;
     public static final ArrayList<String> bridgingTypes = new ArrayList<>(Arrays.asList(
             "All",
-            "Shifted Bridging",
-            "Speedbridging",
+            "Shifted Bridge",
+            "Speedbridge",
             "Breezily/Godbridge",
-            "Stacking",
-            "Jitterbridging"
+            "Stack",
+            "Jitterbridge"
     ));
     public static final ArrayList<LifeKnightVariable> variables = new ArrayList<>();
     public static final LifeKnightBoolean runMod = new LifeKnightBoolean("Mod", "Main", true);

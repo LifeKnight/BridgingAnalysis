@@ -424,14 +424,14 @@ public class BridgingAnalysis {
                 if (getAverageClicksPerSecond() > 7) {
                     result += "Breezily/Godbridge";
                 } else if (shiftTicks.size() / (double) blocksPlacedCount < 0.1 && Minecraft.getMinecraft().thePlayer.isSneaking()) {
-                    result += "Shifted Bridging";
+                    result += "Shifted Bridge";
                 }  else {
                     result += "Low CPS Breezily/Godbridge";
                 }
             } else if (shiftTicks.size() / (double) blocksPlacedCount > (result.contains("Diagonal") ? 0.2 : 0.4)) {
                 result += "Speedbridge";
             } else if (shiftTicks.size() / (double) blocksPlacedCount < 0.1 && Minecraft.getMinecraft().thePlayer.isSneaking()) {
-                result += "Shifted Bridging";
+                result += "Shifted Bridge";
             } else {
                 result += "Breezily/Godbridge-Shift";
             }
