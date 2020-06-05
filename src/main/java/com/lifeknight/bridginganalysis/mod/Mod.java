@@ -47,6 +47,7 @@ public class Mod {
     public static GuiScreen guiToOpen;
     public static final ArrayList<String> bridgingTypes = new ArrayList<>(Arrays.asList(
             "All",
+            "Shifted Bridging",
             "Speedbridging",
             "Breezily/Godbridge",
             "Stacking",
