@@ -81,7 +81,7 @@ public class BridgingAnalysisGui extends GuiScreen {
         }
 
         if (getAnalyses().indexOf(bridgingAnalysis) != 0 && !bridgingAnalysis.getTime().isEmpty()) {
-            super.buttonList.add(new LifeKnightButton("<", super.buttonList.size(), 10, Misc.getGameHeight() - 30, 20) {
+            super.buttonList.add(new LifeKnightButton("<", super.buttonList.size(), getScaledWidth(15), getScaledHeight(475), 20) {
                 @Override
                 public void work() {
                     openGui(new BridgingAnalysisGui(getAnalyses().get(getAnalyses().indexOf(bridgingAnalysis) - 1)));
@@ -90,7 +90,7 @@ public class BridgingAnalysisGui extends GuiScreen {
         }
 
         if (getAnalyses().indexOf(bridgingAnalysis) != getAnalyses().size() - 1 && !bridgingAnalysis.getTime().isEmpty()) {
-            super.buttonList.add(new LifeKnightButton(">", super.buttonList.size(), Misc.getGameWidth() - 30, Misc.getGameHeight() - 30, 20) {
+            super.buttonList.add(new LifeKnightButton(">", super.buttonList.size(), getScaledWidth(917), getScaledHeight(475), 20) {
                 @Override
                 public void work() {
                     openGui(new BridgingAnalysisGui(getAnalyses().get(getAnalyses().indexOf(bridgingAnalysis) + 1)));
@@ -125,6 +125,14 @@ public class BridgingAnalysisGui extends GuiScreen {
             @Override
             public void work() {
                 dateToSearch = "";
+                openGui(new BridgingAnalysisGui(getAnalyses().get(0)));
+            }
+        });
+
+        super.buttonList.add(new LifeKnightButton("Sort By: " + sortBy.getCurrentValueString(), super.buttonList.size(), getScaledWidth(5), getScaledHeight(320), getScaledWidth(175)) {
+            @Override
+            public void work() {
+                sortBy.next();
                 openGui(new BridgingAnalysisGui(getAnalyses().get(0)));
             }
         });

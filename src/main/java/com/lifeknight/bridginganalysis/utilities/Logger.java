@@ -120,9 +120,7 @@ public class Logger {
     }
 
     public ArrayList<String> getLogs() {
-        ArrayList<String> result = logs;
-        result.add(currentLog);
-        return result;
+        return logs;
     }
 
     public File getLogFile() {

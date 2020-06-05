@@ -16,6 +16,7 @@ import java.util.List;
 
 
 import static com.lifeknight.bridginganalysis.mod.BridgingAnalysis.getAnalyses;
+import static com.lifeknight.bridginganalysis.mod.BridgingAnalysis.getAnalysesOrderedByTime;
 import static net.minecraft.util.EnumChatFormatting.*;
 import static com.lifeknight.bridginganalysis.mod.Mod.*;
 
@@ -66,6 +67,7 @@ public class ModCommand extends CommandBase {
 				}
 			} else if (arg1[0].equalsIgnoreCase(mainCommands[1])) {
 				if (getAnalyses().size() != 0) {
+					sortBy.setCurrentValue(0);
 					openGui(new BridgingAnalysisGui(getAnalyses().get(getAnalyses().size() - 1)));
 				} else {
 					Chat.addErrorMessage("There is no BridgingAnalysis session to display.");

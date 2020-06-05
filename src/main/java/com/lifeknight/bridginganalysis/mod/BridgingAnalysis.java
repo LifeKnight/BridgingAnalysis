@@ -1,4 +1,5 @@
 package com.lifeknight.bridginganalysis.mod;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.lifeknight.bridginganalysis.utilities.Misc;
@@ -6,6 +7,7 @@ import com.lifeknight.bridginganalysis.utilities.Stopwatch;
 import com.lifeknight.bridginganalysis.utilities.Text;
 import com.sun.javafx.geom.Vec2d;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 
@@ -26,7 +28,7 @@ public class BridgingAnalysis {
     private double startX = 0;
     private double startY = 0;
     private double startZ = 0;
-    private double endX = 0;;
+    private double endX = 0;
     private double endY = 0;
     private double endZ = 0;
     private String time = "";
@@ -41,6 +43,7 @@ public class BridgingAnalysis {
     private final ArrayList<Vec3> lookVectors = new ArrayList<>();
     private final Stopwatch stopwatch = new Stopwatch();
     private final Stopwatch elevationStopwatch = new Stopwatch();
+    private double ticksSinceBlockPlacement = 0;
 
     public BridgingAnalysis() {
         analyses.add(this);
@@ -196,11 +199,11 @@ public class BridgingAnalysis {
             return 0;
         }
     }
-    
+
     public double getAverageXLook() {
         if (averageXLook == 0) {
             double sumOfXLooks = 0;
-            
+
             for (Vec3 lookVector : lookVectors) {
                 sumOfXLooks += lookVector.xCoord;
             }
@@ -271,6 +274,8 @@ public class BridgingAnalysis {
     public void onBlockPlacement() {
         blocksPlacedCount++;
 
+        ticksSinceBlockPlacement = 0;
+
         if (Minecraft.getMinecraft().thePlayer.posY == Math.floor(Minecraft.getMinecraft().thePlayer.posY) && elevationStopwatch.isRunning()) {
             elevationTimes.add((int) elevationStopwatch.getTotalMilliseconds());
             elevationStopwatch.pause();
@@ -281,13 +286,17 @@ public class BridgingAnalysis {
     public void onTick() {
         totalMilliseconds = stopwatch.getTotalMilliseconds();
 
-        if (automaticallyEndAfterThreshold.getValue() && getTotalMilliseconds() / 1000F >= sessionThreshold.getValue()) {
+        EntityPlayerSP thePlayer = Minecraft.getMinecraft().thePlayer;
+
+        ticksSinceBlockPlacement++;
+
+        if ((automaticallyEndAfterThreshold.getValue() && getTotalMilliseconds() / 1000F >= sessionThreshold.getValue()) || (automaticSessions.getValue() && ticksSinceBlockPlacement > 60)) {
             end();
         } else {
             if (totalMilliseconds % 20 == 0) {
-                lookVectors.add(Minecraft.getMinecraft().thePlayer.getLookVec());
+                lookVectors.add(thePlayer.getLookVec());
             }
-            if (Minecraft.getMinecraft().thePlayer.isSneaking()) {
+            if (thePlayer.isSneaking()) {
                 ticksSpentShifting++;
             } else if (ticksSpentShifting != 0) {
                 shiftTicks.add(ticksSpentShifting);
@@ -396,7 +405,7 @@ public class BridgingAnalysis {
 
     public String detectBridgeType() {
         String result = "";
-        double XtoZRatio = Math.abs((endX - startX) / (endZ - startZ));
+        double XtoZRatio = Math.abs((getEndX() - startX) / (getEndZ() - startZ));
 
         if (XtoZRatio > 0.8 && XtoZRatio < 1.2) {
             result = "Diagonal ";
@@ -404,38 +413,56 @@ public class BridgingAnalysis {
 
         if (getDistanceTraveledVertically() / getDistanceTraveledHorizontally() > 1.25) {
             if (shiftTicks.size() / (double) blocksPlacedCount > 1.25) {
-                result += "Shift-jitterbridging";
+                result += "Shift-Tallstack";
+            } else if (shiftTicks.size() == 0 && Minecraft.getMinecraft().thePlayer.isSneaking()) {
+                result += "Shifted Tallstack";
             } else {
-                result += "Tallstacking";
+                result += "Tallstack";
             }
         } else if (getDistanceTraveledVertically() / getDistanceTraveledHorizontally() < 0.4) {
             if (shiftTicks.size() / (double) blocksPlacedCount < 0.0625) {
-                if (1000 * getRightClickCount() / (double) getTotalMilliseconds() > 7) {
+                if (getAverageClicksPerSecond() > 7) {
                     result += "Breezily/Godbridge";
-                } else {
+                } else if (shiftTicks.size() / (double) blocksPlacedCount < 0.1 && Minecraft.getMinecraft().thePlayer.isSneaking()) {
+                    result += "Shifted Bridging";
+                }  else {
                     result += "Low CPS Breezily/Godbridge";
                 }
-            } else if (shiftTicks.size() / (double) blocksPlacedCount > 0.3) {
-                result += "Speedbridging";
+            } else if (shiftTicks.size() / (double) blocksPlacedCount > (result.contains("Diagonal") ? 0.2 : 0.6)) {
+                result += "Speedbridge";
+            } else if (shiftTicks.size() / (double) blocksPlacedCount < 0.1 && Minecraft.getMinecraft().thePlayer.isSneaking()) {
+                result += "Shifted Bridging";
             } else {
                 result += "Breezily/Godbridge-Shift";
             }
         } else if (getDistanceTraveledVertically() / getDistanceTraveledHorizontally() < 0.8) {
             if (shiftTicks.size() / (double) blocksPlacedCount < 0.25) {
-                if (1000 * getRightClickCount() / (double) getTotalMilliseconds() > 7) {
-                    result += "Jitterbridging";
+                if (getAverageClicksPerSecond() > 7) {
+                    result += "Jitterbridge";
                 } else {
-                    result += "Low CPS Jitterbridging";
+                    result += "Low CPS Jitterbridge";
                 }
             } else {
-                result += "Shift-jitterbridging";
+                result += "Shift-jitterbridge";
             }
         } else {
-            if (1000 * getRightClickCount() / (double) getTotalMilliseconds() > 7) {
-                result += "Jitterstacking";
+            if (getAverageClicksPerSecond() > 7) {
+                if (shiftTicks.size() / (double) blocksPlacedCount < 0.1 && Minecraft.getMinecraft().thePlayer.isSneaking()) {
+                    result += "Shifted Jitterstack";
+                } else {
+                    result += "Jitterstack";
+                }
             } else {
-                result += "Stacking";
+                if (shiftTicks.size() / (double) blocksPlacedCount < 0.1 && Minecraft.getMinecraft().thePlayer.isSneaking()) {
+                    result += "Shifted Stack";
+                } else {
+                    result += "Stack";
+                }
             }
+        }
+
+        if (getAverageClicksPerSecond() < 1) {
+            result += " (Held)";
         }
         return result;
     }
@@ -447,10 +474,26 @@ public class BridgingAnalysis {
             if (!omitSessionsUnderThreshold.getValue() || (omitSessionsUnderThreshold.getValue() && bridgingAnalysis.getTotalMilliseconds() >= omitThreshold.getValue() * 1000)) {
                 if ((filterType.getCurrentValueString().equals("All") || bridgingAnalysis.detectBridgeType().toLowerCase().contains(filterType.getCurrentValueString().toLowerCase())) &&
                         (direction.getCurrentValueString().equals("All") || (direction.getCurrentValueString().equals("Horizontal") && !bridgingAnalysis.detectBridgeType().contains("Diagonal")) || (direction.getCurrentValueString().equals("Diagonal") && bridgingAnalysis.detectBridgeType().contains("Diagonal"))) &&
-                        (dateToSearch.isEmpty() || bridgingAnalysis.getDate().equals(dateToSearch))) {
+                        (dateToSearch.isEmpty() || bridgingAnalysis.getDate().equals(dateToSearch)) &&
+                        !bridgingAnalysis.time.isEmpty()) {
                     result.add(bridgingAnalysis);
                 }
             }
+        }
+
+        switch (sortBy.getCurrentValue()) {
+            case 1:
+                result = getAnalysesOrderedByTime(result);
+                break;
+            case 2:
+                result = getAnalysesOrderedBySpeed(result);
+                break;
+            case 3:
+                result = getAnalysesOrderedByDistance(result);
+                break;
+            case 4:
+                result = getAnalysesOrderedByClicksPerSecond(result);
+                break;
         }
         if (result.size() == 0) {
             BridgingAnalysis bridgingAnalysis = new BridgingAnalysis();
@@ -460,4 +503,63 @@ public class BridgingAnalysis {
         return result;
     }
 
+    public static ArrayList<BridgingAnalysis> getAnalysesOrderedByTime(ArrayList<BridgingAnalysis> analysesIn) {
+        ArrayList<BridgingAnalysis> result = new ArrayList<>();
+        while (analysesIn.size() != 0) {
+            BridgingAnalysis nextBridgingAnalysis = analysesIn.get(0);
+            for (BridgingAnalysis bridgingAnalysis : analysesIn) {
+                if (bridgingAnalysis.getTotalMilliseconds() > nextBridgingAnalysis.getTotalMilliseconds()) {
+                    nextBridgingAnalysis = bridgingAnalysis;
+                }
+            }
+            analysesIn.remove(nextBridgingAnalysis);
+            result.add(nextBridgingAnalysis);
+        }
+        return result;
+    }
+
+    public static ArrayList<BridgingAnalysis> getAnalysesOrderedBySpeed(ArrayList<BridgingAnalysis> analysesIn) {
+        ArrayList<BridgingAnalysis> result = new ArrayList<>();
+        while (analysesIn.size() != 0) {
+            BridgingAnalysis nextBridgingAnalysis = analysesIn.get(0);
+            for (BridgingAnalysis bridgingAnalysis : analysesIn) {
+                if (bridgingAnalysis.getAverageMovementSpeed() > nextBridgingAnalysis.getAverageMovementSpeed()) {
+                    nextBridgingAnalysis = bridgingAnalysis;
+                }
+            }
+            analysesIn.remove(nextBridgingAnalysis);
+            result.add(nextBridgingAnalysis);
+        }
+        return result;
+    }
+
+    public static ArrayList<BridgingAnalysis> getAnalysesOrderedByDistance(ArrayList<BridgingAnalysis> analysesIn) {
+        ArrayList<BridgingAnalysis> result = new ArrayList<>();
+        while (analysesIn.size() != 0) {
+            BridgingAnalysis nextBridgingAnalysis = analysesIn.get(0);
+            for (BridgingAnalysis bridgingAnalysis : analysesIn) {
+                if (bridgingAnalysis.getDistanceTraveled() > nextBridgingAnalysis.getDistanceTraveled()) {
+                    nextBridgingAnalysis = bridgingAnalysis;
+                }
+            }
+            analysesIn.remove(nextBridgingAnalysis);
+            result.add(nextBridgingAnalysis);
+        }
+        return result;
+    }
+
+    public static ArrayList<BridgingAnalysis> getAnalysesOrderedByClicksPerSecond(ArrayList<BridgingAnalysis> analysesIn) {
+        ArrayList<BridgingAnalysis> result = new ArrayList<>();
+        while (analysesIn.size() != 0) {
+            BridgingAnalysis nextBridgingAnalysis = analysesIn.get(0);
+            for (BridgingAnalysis bridgingAnalysis : analysesIn) {
+                if (bridgingAnalysis.getAverageClicksPerSecond() > nextBridgingAnalysis.getAverageClicksPerSecond()) {
+                    nextBridgingAnalysis = bridgingAnalysis;
+                }
+            }
+            analysesIn.remove(nextBridgingAnalysis);
+            result.add(nextBridgingAnalysis);
+        }
+        return result;
+    }
 }
