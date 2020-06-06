@@ -3,7 +3,7 @@ package com.lifeknight.bridginganalysis.variables;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import static com.lifeknight.bridginganalysis.mod.Mod.*;
+import static com.lifeknight.bridginganalysis.mod.Core.*;
 
 public class LifeKnightCycle extends LifeKnightVariable {
     private final ArrayList<String> defaultValues;

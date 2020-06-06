@@ -1,5 +1,6 @@
 package com.lifeknight.bridginganalysis.gui;
 
+import com.lifeknight.bridginganalysis.gui.components.*;
 import com.lifeknight.bridginganalysis.utilities.Misc;
 import com.lifeknight.bridginganalysis.variables.LifeKnightStringList;
 import net.minecraft.client.Minecraft;
@@ -10,7 +11,7 @@ import org.lwjgl.input.Mouse;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import static com.lifeknight.bridginganalysis.mod.Mod.openGui;
+import static com.lifeknight.bridginganalysis.mod.Core.openGui;
 import static com.lifeknight.bridginganalysis.utilities.Misc.*;
 import static net.minecraft.util.EnumChatFormatting.GRAY;
 import static net.minecraft.util.EnumChatFormatting.RED;

@@ -1,4 +1,4 @@
-package com.lifeknight.bridginganalysis.gui;
+package com.lifeknight.bridginganalysis.gui.components;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;

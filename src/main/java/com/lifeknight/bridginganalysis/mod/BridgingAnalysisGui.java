@@ -1,17 +1,15 @@
 package com.lifeknight.bridginganalysis.mod;
 
-import com.lifeknight.bridginganalysis.gui.LifeKnightButton;
-import com.lifeknight.bridginganalysis.gui.LifeKnightTextField;
+import com.lifeknight.bridginganalysis.gui.components.LifeKnightButton;
+import com.lifeknight.bridginganalysis.gui.components.LifeKnightTextField;
 import com.lifeknight.bridginganalysis.utilities.Misc;
-import com.lifeknight.bridginganalysis.utilities.Text;
-import com.lifeknight.bridginganalysis.variables.LifeKnightCycle;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 
 import java.io.IOException;
 
 import static com.lifeknight.bridginganalysis.mod.BridgingAnalysis.getAnalyses;
-import static com.lifeknight.bridginganalysis.mod.Mod.*;
+import static com.lifeknight.bridginganalysis.mod.Core.*;
 import static com.lifeknight.bridginganalysis.utilities.Misc.getScaledHeight;
 import static com.lifeknight.bridginganalysis.utilities.Misc.getScaledWidth;
 import static net.minecraft.util.EnumChatFormatting.*;
@@ -45,17 +43,17 @@ public class BridgingAnalysisGui extends GuiScreen {
             drawCenteredString(fontRendererObj, GRAY + "There is no BridgingAnalysis session to display", super.width / 2, super.height / 2, 0xffffffff);
         } else {
             drawCenteredString(fontRendererObj, DARK_GREEN + "[" + bridgingAnalysis.getDate() + " - " + bridgingAnalysis.getTime() + " - " + bridgingAnalysis.getServerIp() + "]", super.width / 2, getScaledHeight(10), 0xffffffff);
-            drawCenteredString(fontRendererObj, AQUA + "Total Elapsed: " + Text.formatTimeFromMilliseconds(bridgingAnalysis.getTotalMilliseconds()), super.width / 2, getScaledHeight(40), 0xffffffff);
+            drawCenteredString(fontRendererObj, AQUA + "Total Elapsed: " + Utilities.formatTimeFromMilliseconds(bridgingAnalysis.getTotalMilliseconds()), super.width / 2, getScaledHeight(40), 0xffffffff);
             drawCenteredString(fontRendererObj, YELLOW + "Blocks Placed: " + bridgingAnalysis.getBlocksPlacedCount(), super.width / 2, getScaledHeight(70), 0xffffffff);
-            drawCenteredString(fontRendererObj, BLUE + "Average Movement Speed: " + Text.shortenDouble(bridgingAnalysis.getAverageMovementSpeed(), decimalCount.getValue()) + " m/s", super.width / 2, getScaledHeight(100), 0xffffffff);
-            drawCenteredString(fontRendererObj, BLUE + "Average Placement Speed: " + Text.shortenDouble(bridgingAnalysis.getAveragePlacementSpeed(), decimalCount.getValue()) + " b/s", super.width / 2, getScaledHeight(130), 0xffffffff);
-            drawCenteredString(fontRendererObj, GOLD + "Average Time Spent Shifting: " + Text.shortenDouble(bridgingAnalysis.getAverageShiftingTime(), decimalCount.getValue()) + " seconds", super.width / 2, getScaledHeight(160), 0xffffffff);
-            drawCenteredString(fontRendererObj, GOLD + "Average Time Spent Waiting: " + Text.shortenDouble(bridgingAnalysis.getAverageWaitingTime(), decimalCount.getValue()) + " seconds", super.width / 2, getScaledHeight(190), 0xffffffff);
-            drawCenteredString(fontRendererObj, GOLD + "Average Time Spent Elevating: " + Text.shortenDouble(bridgingAnalysis.getAverageElevationTime(), decimalCount.getValue()) + " seconds", super.width / 2, getScaledHeight(220), 0xffffffff);
-            drawCenteredString(fontRendererObj, GOLD + "Average Look Coordinates: " + Text.shortenDouble(bridgingAnalysis.getAverageXLook(), decimalCount.getValue()) + " : " + Text.shortenDouble(bridgingAnalysis.getAverageYLook(), decimalCount.getValue()) + " : " + Text.shortenDouble(bridgingAnalysis.getAverageZLook(), decimalCount.getValue()), super.width / 2, getScaledHeight(250), 0xffffffff);
-            drawCenteredString(fontRendererObj, DARK_AQUA + "Total Distance: " + Text.shortenDouble(bridgingAnalysis.getDistanceTraveled(), decimalCount.getValue()) + " meters", super.width / 2, getScaledHeight(280), 0xffffffff);
+            drawCenteredString(fontRendererObj, BLUE + "Average Movement Speed: " + Utilities.shortenDouble(bridgingAnalysis.getAverageMovementSpeed(), decimalCount.getValue()) + " m/s", super.width / 2, getScaledHeight(100), 0xffffffff);
+            drawCenteredString(fontRendererObj, BLUE + "Average Placement Speed: " + Utilities.shortenDouble(bridgingAnalysis.getAveragePlacementSpeed(), decimalCount.getValue()) + " b/s", super.width / 2, getScaledHeight(130), 0xffffffff);
+            drawCenteredString(fontRendererObj, GOLD + "Average Time Spent Shifting: " + Utilities.shortenDouble(bridgingAnalysis.getAverageShiftingTime(), decimalCount.getValue()) + " seconds", super.width / 2, getScaledHeight(160), 0xffffffff);
+            drawCenteredString(fontRendererObj, GOLD + "Average Time Spent Waiting: " + Utilities.shortenDouble(bridgingAnalysis.getAverageWaitingTime(), decimalCount.getValue()) + " seconds", super.width / 2, getScaledHeight(190), 0xffffffff);
+            drawCenteredString(fontRendererObj, GOLD + "Average Time Spent Elevating: " + Utilities.shortenDouble(bridgingAnalysis.getAverageElevationTime(), decimalCount.getValue()) + " seconds", super.width / 2, getScaledHeight(220), 0xffffffff);
+            drawCenteredString(fontRendererObj, GOLD + "Average Look Coordinates: " + Utilities.shortenDouble(bridgingAnalysis.getAverageXLook(), decimalCount.getValue()) + " : " + Utilities.shortenDouble(bridgingAnalysis.getAverageYLook(), decimalCount.getValue()) + " : " + Utilities.shortenDouble(bridgingAnalysis.getAverageZLook(), decimalCount.getValue()), super.width / 2, getScaledHeight(250), 0xffffffff);
+            drawCenteredString(fontRendererObj, DARK_AQUA + "Total Distance: " + Utilities.shortenDouble(bridgingAnalysis.getDistanceTraveled(), decimalCount.getValue()) + " meters", super.width / 2, getScaledHeight(280), 0xffffffff);
             drawCenteredString(fontRendererObj, GREEN + "Jumps: " + bridgingAnalysis.getJumpCount(), super.width / 2, getScaledHeight(310), 0xffffffff);
-            drawCenteredString(fontRendererObj, RED + "Average CPS: " + Text.shortenDouble(bridgingAnalysis.getAverageClicksPerSecond(), decimalCount.getValue()), super.width / 2, getScaledHeight(340), 0xffffffff);
+            drawCenteredString(fontRendererObj, RED + "Average CPS: " + Utilities.shortenDouble(bridgingAnalysis.getAverageClicksPerSecond(), decimalCount.getValue()), super.width / 2, getScaledHeight(340), 0xffffffff);
             drawCenteredString(fontRendererObj, DARK_RED + "Unused Clicks: " + bridgingAnalysis.getWastedClicks(), super.width / 2, getScaledHeight(370), 0xffffffff);
             drawCenteredString(fontRendererObj, LIGHT_PURPLE + "Detected Type: " + bridgingAnalysis.detectBridgeType(), super.width / 2, getScaledHeight(400), 0xffffffff);
         }

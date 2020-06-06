@@ -4,8 +4,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.lifeknight.bridginganalysis.utilities.Misc;
 import com.lifeknight.bridginganalysis.utilities.Stopwatch;
-import com.lifeknight.bridginganalysis.utilities.Text;
-import com.sun.javafx.geom.Vec2d;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.util.MovingObjectPosition;
@@ -14,8 +12,8 @@ import net.minecraft.util.Vec3;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import static com.lifeknight.bridginganalysis.mod.Mod.*;
-import static com.lifeknight.bridginganalysis.mod.Mod.sessionLogger;
+import static com.lifeknight.bridginganalysis.mod.Core.*;
+import static com.lifeknight.bridginganalysis.mod.Core.sessionLogger;
 import static net.minecraft.util.MovingObjectPosition.MovingObjectType.BLOCK;
 
 public class BridgingAnalysis {
@@ -28,9 +26,9 @@ public class BridgingAnalysis {
     private double startX = 0;
     private double startY = 0;
     private double startZ = 0;
-    private double endX = 0;
-    private double endY = 0;
-    private double endZ = 0;
+    private double endX = Double.MIN_VALUE;
+    private double endY = Double.MIN_VALUE;
+    private double endZ = Double.MIN_VALUE;
     private String time = "";
     private String date = "";
     private String serverIp = "";
@@ -65,23 +63,11 @@ public class BridgingAnalysis {
     }
 
     public int getBlocksPlacedCount() {
-        return blocksPlacedCount;
+        return Minecraft.getMinecraft().isSingleplayer() ? (int) Math.ceil(blocksPlacedCount / 2F) : blocksPlacedCount;
     }
 
     public int getJumpCount() {
         return jumpCount;
-    }
-
-    public double getStartX() {
-        return startX;
-    }
-
-    public double getStartY() {
-        return startY;
-    }
-
-    public double getStartZ() {
-        return startZ;
     }
 
     public int getRightClickCount() {
@@ -100,32 +86,16 @@ public class BridgingAnalysis {
         return serverIp;
     }
 
-    public ArrayList<Integer> getElevationTimes() {
-        return elevationTimes;
-    }
-
-    public ArrayList<Integer> getShiftTicks() {
-        return shiftTicks;
-    }
-
-    public ArrayList<Integer> getWaitTicks() {
-        return waitTicks;
-    }
-
-    public String getTimeElapsedString() {
-        return stopwatch.getFormattedTime();
-    }
-
     public double getEndX() {
-        return endX == 0 ? Minecraft.getMinecraft().thePlayer.posX : endX;
+        return endX == Double.MIN_VALUE ? Minecraft.getMinecraft().thePlayer.posX : endX;
     }
 
     public double getEndY() {
-        return endY == 0 ? Minecraft.getMinecraft().thePlayer.posY : endY;
+        return endY == Double.MIN_VALUE ? Minecraft.getMinecraft().thePlayer.posY : endY;
     }
 
     public double getEndZ() {
-        return endZ == 0 ? Minecraft.getMinecraft().thePlayer.posZ : endZ;
+        return endZ == Double.MIN_VALUE ? Minecraft.getMinecraft().thePlayer.posZ : endZ;
     }
 
     public double getDistanceTraveledHorizontally() {
@@ -141,7 +111,7 @@ public class BridgingAnalysis {
     }
 
     public double getAveragePlacementSpeed() {
-        return (1000 * blocksPlacedCount / (double) getTotalMilliseconds());
+        return (1000 * getBlocksPlacedCount() / (double) getTotalMilliseconds());
     }
 
     public double getAverageMovementSpeed() {
@@ -241,7 +211,7 @@ public class BridgingAnalysis {
     }
 
     public int getWastedClicks() {
-        return getRightClickCount() - blocksPlacedCount;
+        return getRightClickCount() - getBlocksPlacedCount();
     }
 
     public long getTotalMilliseconds() {
@@ -337,13 +307,13 @@ public class BridgingAnalysis {
 
             JsonObject arrays = bridgingAnalysisAsJson.get("arrays").getAsJsonObject();
 
-            result.elevationTimes = Text.fromCSVToIntegerArrayList(arrays.get("elevationTimes").getAsString());
-            result.shiftTicks = Text.fromCSVToIntegerArrayList(arrays.get("shiftTicks").getAsString());
-            result.waitTicks = Text.fromCSVToIntegerArrayList(arrays.get("waitTicks").getAsString());
+            result.elevationTimes = Utilities.fromCSVToIntegerArrayList(arrays.get("elevationTimes").getAsString());
+            result.shiftTicks = Utilities.fromCSVToIntegerArrayList(arrays.get("shiftTicks").getAsString());
+            result.waitTicks = Utilities.fromCSVToIntegerArrayList(arrays.get("waitTicks").getAsString());
 
             JsonObject positions = bridgingAnalysisAsJson.get("positions").getAsJsonObject();
 
-            result.startX = positions.get("startZ").getAsDouble();
+            result.startX = positions.get("startX").getAsDouble();
             result.startY = positions.get("startY").getAsDouble();
             result.startZ = positions.get("startZ").getAsDouble();
 
@@ -382,9 +352,9 @@ public class BridgingAnalysis {
 
         JsonObject arrays = new JsonObject();
 
-        arrays.addProperty("elevationTimes", Text.toCSV(elevationTimes));
-        arrays.addProperty("shiftTicks", Text.toCSV(shiftTicks));
-        arrays.addProperty("waitTicks", Text.toCSV(waitTicks));
+        arrays.addProperty("elevationTimes", Utilities.toCSV(elevationTimes));
+        arrays.addProperty("shiftTicks", Utilities.toCSV(shiftTicks));
+        arrays.addProperty("waitTicks", Utilities.toCSV(waitTicks));
 
         bridgingAnalysisAsJson.add("arrays", arrays);
 
@@ -405,14 +375,16 @@ public class BridgingAnalysis {
 
     public String detectBridgeType() {
         String result = "";
+
         double XtoZRatio = Math.abs((getEndX() - startX) / (getEndZ() - startZ));
+        double shiftToBlocksPlacedRatio = shiftTicks.size() / (double) getBlocksPlacedCount();
 
         if (XtoZRatio > 0.8 && XtoZRatio < 1.2) {
             result = "Diagonal ";
         }
 
         if (getDistanceTraveledVertically() / getDistanceTraveledHorizontally() > 1.25) {
-            if (shiftTicks.size() / (double) blocksPlacedCount > 1.25) {
+            if (shiftTicks.size() / (double) blocksPlacedCount > 2.5) {
                 result += "Shift-Tallstack";
             } else if (shiftTicks.size() == 0 && Minecraft.getMinecraft().thePlayer.isSneaking()) {
                 result += "Shifted Tallstack";
@@ -420,23 +392,31 @@ public class BridgingAnalysis {
                 result += "Tallstack";
             }
         } else if (getDistanceTraveledVertically() / getDistanceTraveledHorizontally() < 0.4) {
-            if (shiftTicks.size() / (double) blocksPlacedCount < 0.0625) {
+            if (shiftToBlocksPlacedRatio < 0.125) {
                 if (getAverageClicksPerSecond() > 7) {
-                    result += "Breezily/Godbridge";
-                } else if (shiftTicks.size() / (double) blocksPlacedCount < 0.1 && Minecraft.getMinecraft().thePlayer.isSneaking()) {
+                    if (getJumpCount() / (double) getBlocksPlacedCount() > 0.25) {
+                        result += "Jitterbridge";
+                    } else {
+                        result += "Breezily/Godbridge";
+                    }
+                } else if (shiftToBlocksPlacedRatio < 0.2 && Minecraft.getMinecraft().thePlayer.isSneaking()) {
                     result += "Shifted Bridge";
-                }  else {
-                    result += "Low CPS Breezily/Godbridge";
+                } else {
+                    if (getJumpCount() / (double) getBlocksPlacedCount() > 0.25) {
+                        result += "Low CPS Jitterbridge";
+                    } else {
+                        result += "Low CPS Breezily/Godbridge";
+                    }
                 }
-            } else if (shiftTicks.size() / (double) blocksPlacedCount > (result.contains("Diagonal") ? 0.2 : 0.4)) {
+            } else if (shiftToBlocksPlacedRatio > (result.contains("Diagonal") ? 0.4 : 0.8)) {
                 result += "Speedbridge";
-            } else if (shiftTicks.size() / (double) blocksPlacedCount < 0.1 && Minecraft.getMinecraft().thePlayer.isSneaking()) {
+            } else if (shiftToBlocksPlacedRatio < 0.2 && Minecraft.getMinecraft().thePlayer.isSneaking()) {
                 result += "Shifted Bridge";
             } else {
                 result += "Breezily/Godbridge-Shift";
             }
         } else if (getDistanceTraveledVertically() / getDistanceTraveledHorizontally() < 0.8) {
-            if (shiftTicks.size() / (double) blocksPlacedCount < 0.25) {
+            if (shiftToBlocksPlacedRatio < 0.5) {
                 if (getAverageClicksPerSecond() > 7) {
                     result += "Jitterbridge";
                 } else {
@@ -447,13 +427,13 @@ public class BridgingAnalysis {
             }
         } else {
             if (getAverageClicksPerSecond() > 7) {
-                if (shiftTicks.size() / (double) blocksPlacedCount < 0.1 && Minecraft.getMinecraft().thePlayer.isSneaking()) {
+                if (shiftToBlocksPlacedRatio < 0.2 && Minecraft.getMinecraft().thePlayer.isSneaking()) {
                     result += "Shifted Jitterstack";
                 } else {
                     result += "Jitterstack";
                 }
             } else {
-                if (shiftTicks.size() / (double) blocksPlacedCount < 0.1 && Minecraft.getMinecraft().thePlayer.isSneaking()) {
+                if (shiftToBlocksPlacedRatio < 0.2 && Minecraft.getMinecraft().thePlayer.isSneaking()) {
                     result += "Shifted Stack";
                 } else {
                     result += "Stack";

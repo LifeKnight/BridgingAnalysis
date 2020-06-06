@@ -2,7 +2,6 @@ package com.lifeknight.bridginganalysis.mod;
 
 import com.lifeknight.bridginganalysis.gui.hud.HudText;
 import com.lifeknight.bridginganalysis.utilities.Logger;
-import com.lifeknight.bridginganalysis.utilities.Misc;
 import com.lifeknight.bridginganalysis.variables.LifeKnightBoolean;
 import com.lifeknight.bridginganalysis.variables.LifeKnightCycle;
 import com.lifeknight.bridginganalysis.variables.LifeKnightInteger;
@@ -35,11 +34,11 @@ import java.util.concurrent.Executors;
 import static com.lifeknight.bridginganalysis.gui.hud.HudTextRenderer.doRender;
 import static net.minecraft.util.EnumChatFormatting.*;
 
-@net.minecraftforge.fml.common.Mod(modid = Mod.modID, name = Mod.modName, version = Mod.modVersion, clientSideOnly = true)
-public class Mod {
+@net.minecraftforge.fml.common.Mod(modid = Core.modID, name = Core.modName, version = Core.modVersion, clientSideOnly = true)
+public class Core {
     public static final String
             modName = "BridgingAnalysis",
-            modVersion = "0.3.1",
+            modVersion = "1.0",
             modID = "bridginganalysis";
     public static final EnumChatFormatting modColor = DARK_GREEN;
     public static final ExecutorService THREAD_POOL = Executors.newCachedThreadPool(new LifeKnightThreadFactory());
@@ -62,8 +61,6 @@ public class Mod {
     public static final LifeKnightBoolean omitSessionsUnderThreshold = new LifeKnightBoolean("OmitSessionsUnderThreshold", "Settings", true);
     public static final LifeKnightInteger omitThreshold = new LifeKnightInteger("OmitThreshold", "Settings", 5, 1, 30);
     public static final LifeKnightInteger decimalCount = new LifeKnightInteger("DecimalCount", "Settings", 2, 0, 8);
-    public static final LifeKnightInteger statusXPosition = new LifeKnightInteger("StatusXPosition", "HUD", 10, 0, 1920);
-    public static final LifeKnightInteger statusYPosition = new LifeKnightInteger("StatusYPosition", "HUD", 5, 0, 1080);
     public static final LifeKnightCycle filterType = new LifeKnightCycle("FilterType", "Invisible", bridgingTypes, 0);
     public static final LifeKnightCycle direction = new LifeKnightCycle("Direction", "Invisible", new ArrayList<String>(Arrays.asList("All", "Horizontal", "Diagonal")), 0);
     public static final LifeKnightCycle sortBy = new LifeKnightCycle("SortBy", "Invisible", new ArrayList<>(Arrays.asList(
@@ -90,33 +87,24 @@ public class Mod {
         variables.remove(direction);
         variables.remove(sortBy);
 
+        new HudText("Status") {
+            @Override
+            public String getTextToDisplay() {
+                return sessionIsRunning ? GREEN + "ACTIVE: " + AQUA + analyses.get(analyses.size() - 1).detectBridgeType() : RED + "INACTIVE:" + AQUA + " [No Type Detected]";
+            }
+
+            @Override
+            public boolean isVisible() {
+                return sessionIsRunning && showStatus.getValue();
+            }
+        };
+
         config = new Config();
 
         sessionLogger = new Logger("BridgingSessions", new File("logs/lifeknight/bridgingsessions"));
 
         getSessionsFromLogs();
 
-        new HudText() {
-            @Override
-            public boolean isVisible() {
-                return sessionIsRunning && showStatus.getValue();
-            }
-
-            @Override
-            public String getTextToDisplay() {
-                return GREEN + "ACTIVE" + GOLD + ": " + AQUA + analyses.get(analyses.size() - 1).detectBridgeType();
-            }
-
-            @Override
-            public int getXCoordinate() {
-                return Misc.scaleFrom1920x1080Width(statusXPosition.getValue());
-            }
-
-            @Override
-            public int getYCoordinate() {
-                return Misc.scaleFrom1920x1080Height(statusYPosition.getValue());
-            }
-        };
     }
 
     @SubscribeEvent
@@ -222,8 +210,8 @@ public class Mod {
     }
 
     private void getSessionsFromLogs() {
-        for (String log : sessionLogger.getLogs()) {
-            THREAD_POOL.submit(() -> {
+        THREAD_POOL.submit(() -> {
+            for (String log : sessionLogger.getLogs()) {
                 Scanner scanner = new Scanner(log);
 
                 String line;
@@ -233,7 +221,7 @@ public class Mod {
                         BridgingAnalysis.interpretBridgingAnalysisFromJson(line);
                     }
                 }
-            });
-        }
+            }
+        });
     }
 }

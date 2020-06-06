@@ -1,4 +1,4 @@
-package com.lifeknight.bridginganalysis.gui;
+package com.lifeknight.bridginganalysis.gui.components;
 
 import com.lifeknight.bridginganalysis.utilities.Misc;
 import net.minecraft.client.Minecraft;

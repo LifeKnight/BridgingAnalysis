@@ -1,8 +1,8 @@
 package com.lifeknight.bridginganalysis.mod;
 
 import com.lifeknight.bridginganalysis.gui.LifeKnightGui;
-import com.lifeknight.bridginganalysis.utilities.Chat;
-import com.lifeknight.bridginganalysis.utilities.Text;
+import com.lifeknight.bridginganalysis.gui.ManipulableGui;
+import com.lifeknight.bridginganalysis.gui.components.LifeKnightButton;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
@@ -16,9 +16,8 @@ import java.util.List;
 
 
 import static com.lifeknight.bridginganalysis.mod.BridgingAnalysis.getAnalyses;
-import static com.lifeknight.bridginganalysis.mod.BridgingAnalysis.getAnalysesOrderedByTime;
 import static net.minecraft.util.EnumChatFormatting.*;
-import static com.lifeknight.bridginganalysis.mod.Mod.*;
+import static com.lifeknight.bridginganalysis.mod.Core.*;
 
 public class ModCommand extends CommandBase {
 	private final List<String> aliases = Collections.singletonList("ba");
@@ -35,7 +34,7 @@ public class ModCommand extends CommandBase {
 	public List<String> addTabCompletionOptions(ICommandSender arg0, String[] arg1, BlockPos arg2) {
 
 		if (arg1.length >= 1) {
-			return Text.returnStartingEntries(new ArrayList<>(Arrays.asList(mainCommands)), arg1[0]);
+			return Utilities.returnStartingEntries(new ArrayList<>(Arrays.asList(mainCommands)), arg1[0]);
 		}
 
 		return new ArrayList<>(Arrays.asList(mainCommands));
@@ -63,20 +62,31 @@ public class ModCommand extends CommandBase {
 				if (getAnalyses().size() != 0) {
 					openGui(new BridgingAnalysisGui(getAnalyses().get(0)));
 				} else {
-					Chat.addErrorMessage("There is no BridgingAnalysis session to display.");
+					Utilities.addErrorMessage("There is no BridgingAnalysis session to display.");
 				}
 			} else if (arg1[0].equalsIgnoreCase(mainCommands[1])) {
 				if (getAnalyses().size() != 0) {
 					sortBy.setCurrentValue(0);
 					openGui(new BridgingAnalysisGui(getAnalyses().get(getAnalyses().size() - 1)));
 				} else {
-					Chat.addErrorMessage("There is no BridgingAnalysis session to display.");
+					Utilities.addErrorMessage("There is no BridgingAnalysis session to display.");
 				}
 			} else {
 				addMainCommandMessage();
 			}
 		} else {
-			openGui(new LifeKnightGui("[" + modVersion + "] " + modName, variables));
+			openGui(new LifeKnightGui("[" + modVersion + "] " + modName, variables, new ArrayList<>(Arrays.asList(new LifeKnightButton("View Sessions") {
+				@Override
+				public void work() {
+					sortBy.setCurrentValue(0);
+					openGui(new BridgingAnalysisGui(getAnalyses().get(getAnalyses().size() - 1)));
+				}
+			}, new LifeKnightButton("Edit HUD") {
+				@Override
+				public void work() {
+					openGui(new ManipulableGui());
+				}
+			}))));
 		}
 	}
 
@@ -87,6 +97,6 @@ public class ModCommand extends CommandBase {
 			result.append(" ").append(command).append(",");
 		}
 
-		Chat.addChatMessage(result.substring(0, result.length() - 1));
+		Utilities.addChatMessage(result.substring(0, result.length() - 1));
 	}
 }

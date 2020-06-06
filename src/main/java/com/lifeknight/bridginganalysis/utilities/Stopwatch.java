@@ -1,6 +1,6 @@
 package com.lifeknight.bridginganalysis.utilities;
 
-import static com.lifeknight.bridginganalysis.mod.Mod.THREAD_POOL;
+import static com.lifeknight.bridginganalysis.mod.Core.THREAD_POOL;
 
 public class Stopwatch {
     private long totalSeconds = 0L;

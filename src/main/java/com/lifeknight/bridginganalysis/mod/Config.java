@@ -14,8 +14,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import static com.lifeknight.bridginganalysis.mod.Mod.modID;
-import static com.lifeknight.bridginganalysis.mod.Mod.variables;
+import static com.lifeknight.bridginganalysis.mod.Core.modID;
+import static com.lifeknight.bridginganalysis.mod.Core.variables;
 
 public class Config {
 	private JsonObject configAsJson = new JsonObject();
@@ -47,7 +47,7 @@ public class Config {
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
-					Chat.queueChatMessageForConnection(EnumChatFormatting.RED + "An error occurred while extracting the value of \"" + variable.getName() + "\" from the config; the value will be interpreted as " + variable.getValue() + ".");
+					Utilities.queueChatMessageForConnection(EnumChatFormatting.RED + "An error occurred while extracting the value of \"" + variable.getName() + "\" from the config; the value will be interpreted as " + variable.getValue() + ".");
 				}
 			}
 		}

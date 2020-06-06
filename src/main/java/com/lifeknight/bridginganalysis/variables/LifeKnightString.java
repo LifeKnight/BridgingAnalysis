@@ -1,7 +1,7 @@
 package com.lifeknight.bridginganalysis.variables;
 
-import static com.lifeknight.bridginganalysis.mod.Mod.config;
-import static com.lifeknight.bridginganalysis.mod.Mod.variables;
+import static com.lifeknight.bridginganalysis.mod.Core.config;
+import static com.lifeknight.bridginganalysis.mod.Core.variables;
 
 public class LifeKnightString extends LifeKnightVariable {
     private final String defaultValue;

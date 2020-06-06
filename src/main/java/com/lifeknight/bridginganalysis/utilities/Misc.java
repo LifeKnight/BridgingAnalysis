@@ -11,15 +11,6 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Misc {
 	public static int height = 0;
 	public static int width = 0;
-
-	public static int getRandomIntBetweenRange(int min, int max) {
-		return ThreadLocalRandom.current().nextInt(min, max);
-	}
-
-	public static double getRandomDoubleBetweenRange(double min, double max) {
-		return ThreadLocalRandom.current().nextDouble(min, max);
-	}
-
 	public static String getCurrentDate() {
 		return new SimpleDateFormat("MM/dd/yyyy").format(new Date());
 	}
@@ -47,12 +38,12 @@ public class Misc {
 	}
 
 	public static int getSupposedWidth() {
-		int i = Minecraft.getMinecraft().gameSettings.guiScale == 0 ? 1 : Minecraft.getMinecraft().gameSettings.guiScale;
+		int i = Minecraft.getMinecraft().gameSettings.guiScale == 0 ? 3 : Minecraft.getMinecraft().gameSettings.guiScale;
 		return 1920 / i;
 	}
 
 	public static int getSupposedHeight() {
-		int i = Minecraft.getMinecraft().gameSettings.guiScale == 0 ? 1 : Minecraft.getMinecraft().gameSettings.guiScale;
+		int i = Minecraft.getMinecraft().gameSettings.guiScale == 0 ? 3 : Minecraft.getMinecraft().gameSettings.guiScale;
 		return 1080 / i;
 	}
 
@@ -65,12 +56,12 @@ public class Misc {
 	}
 
 	public static int getGameWidth() {
-		int i = Minecraft.getMinecraft().gameSettings.guiScale == 0 ? 1 : Minecraft.getMinecraft().gameSettings.guiScale;
+		int i = Minecraft.getMinecraft().gameSettings.guiScale == 0 ? 3 : Minecraft.getMinecraft().gameSettings.guiScale;
 		return Minecraft.getMinecraft().displayWidth / i;
 	}
 
 	public static int getGameHeight() {
-		int i = Minecraft.getMinecraft().gameSettings.guiScale == 0 ? 1 : Minecraft.getMinecraft().gameSettings.guiScale;
+		int i = Minecraft.getMinecraft().gameSettings.guiScale == 0 ? 3 : Minecraft.getMinecraft().gameSettings.guiScale;
 		return Minecraft.getMinecraft().displayHeight / i;
 	}
 
@@ -88,9 +79,9 @@ public class Misc {
 		return new Vec2d(yaw, pitch);
 	}
 	
-	public static int scaleFrom1920x1080Width(int widthIn) {
+	public static int scaleFrom1080pWidth(int widthIn) {
 		int i;
-		if (Minecraft.getMinecraft().gameSettings.guiScale == 0 || Minecraft.getMinecraft().gameSettings.guiScale == 1) {
+		if (Minecraft.getMinecraft().gameSettings.guiScale == 0 || Minecraft.getMinecraft().gameSettings.guiScale == 3) {
 			i = widthIn / 3;
 		} else if (Minecraft.getMinecraft().gameSettings.guiScale == 2) {
 			i = widthIn / 2;
@@ -100,9 +91,9 @@ public class Misc {
 		return (int) (i * (getGameWidth() / (double) getSupposedWidth()));
 	}
 
-	public static int scaleFrom1920x1080Height(int widthIn) {
+	public static int scaleFrom1080pHeight(int widthIn) {
 		int i;
-		if (Minecraft.getMinecraft().gameSettings.guiScale == 0 || Minecraft.getMinecraft().gameSettings.guiScale == 1) {
+		if (Minecraft.getMinecraft().gameSettings.guiScale == 0 || Minecraft.getMinecraft().gameSettings.guiScale == 3) {
 			i = widthIn / 3;
 		} else if (Minecraft.getMinecraft().gameSettings.guiScale == 2) {
 			i = widthIn / 2;
@@ -110,5 +101,29 @@ public class Misc {
 			i = widthIn;
 		}
 		return (int) (i * (getGameHeight() / (double) getSupposedHeight()));
+	}
+
+	public static int scaleTo1080pWidth(int widthIn) {
+		int i;
+		if (Minecraft.getMinecraft().gameSettings.guiScale == 0 || Minecraft.getMinecraft().gameSettings.guiScale == 3) {
+			i = widthIn * 3;
+		} else if (Minecraft.getMinecraft().gameSettings.guiScale == 2) {
+			i = widthIn * 2;
+		} else {
+			i = widthIn;
+		}
+		return (int) (i * (getSupposedWidth() / (double) getGameWidth()));
+	}
+
+	public static int scaleTo1080pHeight(int heightIn) {
+		int i;
+		if (Minecraft.getMinecraft().gameSettings.guiScale == 0 || Minecraft.getMinecraft().gameSettings.guiScale == 3) {
+			i = heightIn * 3;
+		} else if (Minecraft.getMinecraft().gameSettings.guiScale == 2) {
+			i = heightIn * 2;
+		} else {
+			i = heightIn;
+		}
+		return (int) (i * (getSupposedHeight() / (double) getGameHeight()));
 	}
 }

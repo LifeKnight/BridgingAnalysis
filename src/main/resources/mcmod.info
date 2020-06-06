@@ -2,11 +2,11 @@
 {
   "modid": "bridginganalysis",
   "name": "Bridging Analysis",
-  "description": "Automatically records data demonstrated in my \"Analyzing YouTubers' Speedbridging\" video: https://www.youtube.com/watch?v=nfYcX0qfTZ0\n\nFeaturese:\n\nVideo:\n\nText: https://hst.sh/bobalowuho.sql ",
+  "description": "Automatically records data demonstrated in my \"Analyzing YouTubers' Speedbridging\" video: https://www.youtube.com/watch?v=nfYcX0qfTZ0.",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",
-  "updateUrl": "",
+  "updateUrl": "https://docs.google.com/document/d/1Yl24q8Qo8WZnpgxbgkg-2fo5Dminu8rELJgCcDLmna0/edit?usp=sharing",
   "authorList": ["LifeKnight"],
   "credits": "",
   "logoFile": "",

@@ -1,5 +1,6 @@
 package com.lifeknight.bridginganalysis.gui;
 
+import com.lifeknight.bridginganalysis.gui.components.*;
 import com.lifeknight.bridginganalysis.utilities.Misc;
 import com.lifeknight.bridginganalysis.variables.*;
 import net.minecraft.client.Minecraft;
@@ -14,7 +15,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import static com.lifeknight.bridginganalysis.utilities.Misc.*;
-import static com.lifeknight.bridginganalysis.mod.Mod.*;
+import static com.lifeknight.bridginganalysis.mod.Core.*;
 import static net.minecraft.util.EnumChatFormatting.*;
 
 public class LifeKnightGui extends GuiScreen {
@@ -36,7 +37,7 @@ public class LifeKnightGui extends GuiScreen {
         this.name = name;
         guiVariables.addAll(lifeKnightVariables);
         for (LifeKnightVariable lifeKnightVariable: guiVariables) {
-            if (!groupNames.contains(lifeKnightVariable.getGroup())) {
+            if (!groupNames.contains(lifeKnightVariable.getGroup()) && !lifeKnightVariable.getGroup().equals("Invisible")) {
                 groupNames.add(lifeKnightVariable.getGroup());
             }
         }
@@ -72,6 +73,13 @@ public class LifeKnightGui extends GuiScreen {
                         guiButton.yPosition += j;
                     } else {
                         guiButton.yPosition += Math.ceil(toScroll * ((double) Misc.height / getSupposedHeight()));
+                    }
+                }
+                for (LifeKnightButton lifeKnightButton: extraButtons) {
+                    if (toScroll == 0) {
+                        lifeKnightButton.yPosition += j;
+                    } else {
+                        lifeKnightButton.yPosition += Math.ceil(toScroll * ((double) Misc.height / getSupposedHeight()));
                     }
                 }
                 for (LifeKnightTextField lifeKnightTextField: textFields) {
@@ -183,7 +191,7 @@ public class LifeKnightGui extends GuiScreen {
         int componentId = 0;
 
         for (LifeKnightVariable lifeKnightVariable: guiVariables) {
-            if (((selectedGroup.equals("All") || selectedGroup.equals(lifeKnightVariable.getGroup())) && (searchInput.isEmpty() || lifeKnightVariable.getLowerCaseName().contains(searchInput.toLowerCase())))) {
+            if (((selectedGroup.equals("All") || selectedGroup.equals(lifeKnightVariable.getGroup())) && (searchInput.isEmpty() || lifeKnightVariable.getLowerCaseName().contains(searchInput.toLowerCase()))) && !lifeKnightVariable.getGroup().equals("Invisible")) {
                 variablesFound = true;
                 if (lifeKnightVariable instanceof LifeKnightBoolean) {
                     if (((LifeKnightBoolean) lifeKnightVariable).hasStringList()) {

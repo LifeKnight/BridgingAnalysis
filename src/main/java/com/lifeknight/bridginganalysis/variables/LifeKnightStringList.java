@@ -1,14 +1,14 @@
 package com.lifeknight.bridginganalysis.variables;
 
-import com.lifeknight.bridginganalysis.utilities.Chat;
+import com.lifeknight.bridginganalysis.mod.Utilities;
 import net.minecraft.util.EnumChatFormatting;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static com.lifeknight.bridginganalysis.mod.Mod.config;
-import static com.lifeknight.bridginganalysis.mod.Mod.variables;
+import static com.lifeknight.bridginganalysis.mod.Core.config;
+import static com.lifeknight.bridginganalysis.mod.Core.variables;
 
 public class LifeKnightStringList extends LifeKnightVariable {
     private final ArrayList<String> defaultValue;
@@ -68,7 +68,7 @@ public class LifeKnightStringList extends LifeKnightVariable {
                 value = new ArrayList<>(Arrays.asList(CSV.split(",")));
             } catch (Exception e) {
                 e.printStackTrace();
-                Chat.queueChatMessageForConnection(EnumChatFormatting.RED + "An error occurred while extracting the value of \"" + super.getName() + "\" from the config; the value will be interpreted as " + value + ".");
+                Utilities.queueChatMessageForConnection(EnumChatFormatting.RED + "An error occurred while extracting the value of \"" + super.getName() + "\" from the config; the value will be interpreted as " + value + ".");
             }
         } else {
             value = new ArrayList<>();

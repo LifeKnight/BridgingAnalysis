@@ -1,8 +1,8 @@
 package com.lifeknight.bridginganalysis.variables;
 
 
-import static com.lifeknight.bridginganalysis.mod.Mod.config;
-import static com.lifeknight.bridginganalysis.mod.Mod.variables;
+import static com.lifeknight.bridginganalysis.mod.Core.config;
+import static com.lifeknight.bridginganalysis.mod.Core.variables;
 import static net.minecraft.util.EnumChatFormatting.GREEN;
 import static net.minecraft.util.EnumChatFormatting.RED;
 
