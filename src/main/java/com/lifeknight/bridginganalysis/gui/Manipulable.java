@@ -21,5 +21,28 @@ public abstract class Manipulable {
         positionY.setValue(Misc.scaleTo1080pHeight(y + 3));
     }
 
-    public abstract String getTextToDisplay();
+    public int getXCoordinate() {
+        int returnValue;
+        if ((returnValue = Misc.scaleFrom1080pWidth(positionX.getValue())) < 0) {
+            positionX.setValue(3);
+            returnValue = 3;
+        }
+        return returnValue;
+    }
+
+    public int getYCoordinate() {
+        int returnValue;
+        if ((returnValue = Misc.scaleFrom1080pWidth(positionY.getValue())) < 0) {
+            positionY.setValue(3);
+            returnValue = 3;
+        }
+        return returnValue;
+    }
+
+    public void resetPosition() {
+        positionX.reset();
+        positionY.reset();
+    }
+
+    public abstract String getDisplayText();
 }

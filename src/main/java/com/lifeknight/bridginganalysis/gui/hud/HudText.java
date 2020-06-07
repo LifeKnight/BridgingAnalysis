@@ -1,7 +1,6 @@
 package com.lifeknight.bridginganalysis.gui.hud;
 
 import com.lifeknight.bridginganalysis.gui.Manipulable;
-import com.lifeknight.bridginganalysis.utilities.Misc;
 import net.minecraft.client.Minecraft;
 
 import static com.lifeknight.bridginganalysis.gui.hud.HudTextRenderer.textToRender;
@@ -23,25 +22,18 @@ public abstract class HudText extends Manipulable {
         return dropShadow;
     }
 
-    public abstract boolean isVisible();
-
     public void setDropShadow(boolean dropShadow) {
         this.dropShadow = dropShadow;
     }
 
     public void render() {
         if (this.isVisible()) {
-            Minecraft.getMinecraft().fontRendererObj.drawString(getTextToDisplay(), getXCoordinate(), getYCoordinate(), 0xffffffff, dropShadow);
+            Minecraft.getMinecraft().fontRendererObj.drawString(getDisplayText(), getXCoordinate(), getYCoordinate(), 0xffffffff, dropShadow);
         }
     }
 
-    public abstract String getTextToDisplay();
+    @Override
+    public abstract String getDisplayText();
 
-    public int getXCoordinate() {
-        return Misc.scaleFrom1080pWidth(super.positionX.getValue());
-    }
-
-    public int getYCoordinate() {
-        return Misc.scaleFrom1080pHeight(super.positionY.getValue());
-    }
+    public abstract boolean isVisible();
 }

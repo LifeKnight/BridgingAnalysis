@@ -303,6 +303,7 @@ public class BridgingAnalysis {
             result.blocksPlacedCount = counts.get("blocksPlaced").getAsInt();
             result.rightClickCount = counts.get("rightClicks").getAsInt();
             result.jumpCount = counts.get("jumps").getAsInt();
+            result.ticksSpentShifting = counts.get("ticksSpentShifting").getAsInt();
             result.totalMilliseconds = counts.get("totalMilliseconds").getAsInt();
 
             JsonObject arrays = bridgingAnalysisAsJson.get("arrays").getAsJsonObject();
@@ -346,6 +347,7 @@ public class BridgingAnalysis {
         counts.addProperty("blocksPlaced", blocksPlacedCount);
         counts.addProperty("rightClicks", rightClickCount);
         counts.addProperty("jumps", jumpCount);
+        counts.addProperty("ticksSpentShifting", ticksSpentShifting);
         counts.addProperty("totalMilliseconds", stopwatch.getTotalMilliseconds());
 
         bridgingAnalysisAsJson.add("counts", counts);
@@ -383,10 +385,13 @@ public class BridgingAnalysis {
             result = "Diagonal ";
         }
 
+        boolean isShifted = (shiftToBlocksPlacedRatio < (result.contains("Diagonal") ? 0.4 : 0.2) && Minecraft.getMinecraft().thePlayer.isSneaking()) || (1000 * getTotalSecondsSpentShifting() / (double) getTotalMilliseconds() > 0.8) || 1000 * ticksSpentShifting * 0.025 / (double) getTotalMilliseconds() > 0.8;
+
+
         if (getDistanceTraveledVertically() / getDistanceTraveledHorizontally() > 1.25) {
-            if (shiftTicks.size() / (double) blocksPlacedCount > 2.5) {
+            if (shiftToBlocksPlacedRatio > (result.contains("Diagonal") ? 0.625 : 1.25)) {
                 result += "Shift-Tallstack";
-            } else if (shiftTicks.size() == 0 && Minecraft.getMinecraft().thePlayer.isSneaking()) {
+            } else if (isShifted) {
                 result += "Shifted Tallstack";
             } else {
                 result += "Tallstack";
@@ -399,7 +404,7 @@ public class BridgingAnalysis {
                     } else {
                         result += "Breezily/Godbridge";
                     }
-                } else if (shiftToBlocksPlacedRatio < 0.2 && Minecraft.getMinecraft().thePlayer.isSneaking()) {
+                } else if (isShifted) {
                     result += "Shifted Bridge";
                 } else {
                     if (getJumpCount() / (double) getBlocksPlacedCount() > 0.25) {
@@ -410,12 +415,12 @@ public class BridgingAnalysis {
                 }
             } else if (shiftToBlocksPlacedRatio > (result.contains("Diagonal") ? 0.4 : 0.8)) {
                 result += "Speedbridge";
-            } else if (shiftToBlocksPlacedRatio < 0.2 && Minecraft.getMinecraft().thePlayer.isSneaking()) {
+            } else if (isShifted) {
                 result += "Shifted Bridge";
             } else {
                 result += "Breezily/Godbridge-Shift";
             }
-        } else if (getDistanceTraveledVertically() / getDistanceTraveledHorizontally() < 0.8) {
+        } else if (getDistanceTraveledVertically() / getDistanceTraveledHorizontally() < 0.7) {
             if (shiftToBlocksPlacedRatio < 0.5) {
                 if (getAverageClicksPerSecond() > 7) {
                     result += "Jitterbridge";
@@ -427,13 +432,13 @@ public class BridgingAnalysis {
             }
         } else {
             if (getAverageClicksPerSecond() > 7) {
-                if (shiftToBlocksPlacedRatio < 0.2 && Minecraft.getMinecraft().thePlayer.isSneaking()) {
+                if (isShifted) {
                     result += "Shifted Jitterstack";
                 } else {
                     result += "Jitterstack";
                 }
             } else {
-                if (shiftToBlocksPlacedRatio < 0.2 && Minecraft.getMinecraft().thePlayer.isSneaking()) {
+                if (isShifted) {
                     result += "Shifted Stack";
                 } else {
                     result += "Stack";

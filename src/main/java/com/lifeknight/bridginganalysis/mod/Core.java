@@ -89,7 +89,7 @@ public class Core {
 
         new HudText("Status") {
             @Override
-            public String getTextToDisplay() {
+            public String getDisplayText() {
                 return sessionIsRunning ? GREEN + "ACTIVE: " + AQUA + analyses.get(analyses.size() - 1).detectBridgeType() : RED + "INACTIVE:" + AQUA + " [No Type Detected]";
             }
 

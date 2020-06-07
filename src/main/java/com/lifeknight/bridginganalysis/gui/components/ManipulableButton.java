@@ -18,9 +18,9 @@ public class ManipulableButton extends LifeKnightButton {
         super(Manipulable.manipulableComponents.indexOf(manipulable),
                 Misc.scaleFrom1080pWidth(manipulable.positionX.getValue() - 3),
                 Misc.scaleFrom1080pHeight(manipulable.positionY.getValue() - 3),
-                Minecraft.getMinecraft().fontRendererObj.getStringWidth(manipulable.getTextToDisplay() + 2),
+                Minecraft.getMinecraft().fontRendererObj.getStringWidth(manipulable.getDisplayText() + 2),
                 16,
-                manipulable.getTextToDisplay());
+                manipulable.getDisplayText());
         this.manipulable = manipulable;
 
         if (this.xPosition < 0 || this.xPosition + this.width > Misc.getGameWidth() ||
@@ -33,7 +33,7 @@ public class ManipulableButton extends LifeKnightButton {
 
     @Override
     public void drawButton(Minecraft mc, int mouseX, int mouseY) {
-        this.displayString = manipulable.getTextToDisplay();
+        this.displayString = manipulable.getDisplayText();
         if (this.visible) {
             if (isSelectedButton) {
                 drawEmptyBox(this.xPosition, this.yPosition, this.xPosition + this.width, this.yPosition + this.height, 0xffffffff);
@@ -93,5 +93,11 @@ public class ManipulableButton extends LifeKnightButton {
 
         drawVerticalLine(left, top, bottom, color);
         drawVerticalLine(right, top, bottom, color);
+    }
+
+    public void resetPosition() {
+        manipulable.resetPosition();
+        this.xPosition = Misc.scaleFrom1080pWidth(manipulable.positionX.getValue() - 3);
+        this.yPosition = Misc.scaleFrom1080pHeight(manipulable.positionY.getValue() - 3);
     }
 }
