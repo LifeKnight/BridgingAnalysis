@@ -260,7 +260,7 @@ public class BridgingAnalysis {
 
         ticksSinceBlockPlacement++;
 
-        if ((automaticallyEndAfterThreshold.getValue() && getTotalMilliseconds() / 1000F >= sessionThreshold.getValue()) || (automaticSessions.getValue() && ticksSinceBlockPlacement > 60)) {
+        if ((automaticallyEndAfterThreshold.getValue() && getTotalMilliseconds() / 1000F >= sessionThreshold.getValue()) || (automaticSessions.getValue() && ticksSinceBlockPlacement > (detectBridgeType().toLowerCase().contains("tallstack") ? 120 : 605))) {
             end();
         } else {
             if (totalMilliseconds % 20 == 0) {
